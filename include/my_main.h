@@ -19,5 +19,7 @@
 #include "myHAL.h"
 #include "videoPlayer.h"
 #include "animations.h"
+#include "cameraUtils.h"
+
 void waitboot_scr_load(void);
 extern pthread_mutex_t lv_mutex;

@@ -5,10 +5,6 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <linux/input.h>
-// 
-#include <chrono>
-#include <thread>
-#include "util/rate.h"
 
 #define INPUT_DEVICE_ENCODER "/dev/input/event0"
 #define INPUT_DEVICE_KEY "/dev/input/event2"
@@ -31,6 +27,8 @@ void signal_exit(int signo)
     sunxifb_exit();
     printf("exit\n");
 #endif
+    videoPlayer.disconnect();
+    sleep(1);
     exit(0);
 }
 // 按键刷新线程
@@ -156,33 +154,11 @@ void HAL::init()
 // LVGL定时器处理
 void HAL::lv_loop()
 {
-    Rate rate(120);
     while (true)
     {
         pthread_mutex_lock(&lv_mutex);
         lv_task_handler();
         pthread_mutex_unlock(&lv_mutex);
-        rate.Sleep();
+        usleep(2000);
     }
-}
-// 检查摄像头网络接口
-bool HAL::checkCameraIF()
-{
-    static char if_check_buffer[IF_CHECK_MAX_SIZE];
-    FILE *f = fopen(IF_CHECK_FILENAME, "r");
-    if (f == NULL)
-        return false;
-    fread(if_check_buffer, IF_CHECK_MAX_SIZE, 1, f);
-    fclose(f);
-    if (strstr(if_check_buffer, IF_CHECK_NAME) != NULL)
-    {
-        return true;
-    }
-    return false;
-}
-// 设置摄像头固定IP
-void HAL::setCameraIFIP()
-{
-    system("ifconfig usb0 up");
-    system("ifconfig usb0 192.168.64.32");
 }

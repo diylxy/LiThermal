@@ -25,9 +25,9 @@ void waitboot_scr_load(void)
     lv_obj_add_flag(ui_Image1, LV_OBJ_FLAG_ADV_HITTEST);  /// Flags
     lv_obj_clear_flag(ui_Image1, LV_OBJ_FLAG_SCROLLABLE); /// Flags
     lv_my_anim_fall_down(ui_Image1, MY_POP_FALL_ANIM_DEFAULT_TIME, 100);
-    if(HAL::checkCameraIF() == true)
+    if(cameraUtils.checkCameraConnection() == true)
     {
-        HAL::setCameraIFIP();
+        cameraUtils.setCameraIP();
         videoPlayer.init();
         videoPlayer.connect();
         return;
@@ -63,11 +63,11 @@ void waitboot_scr_load(void)
                 current_bar_pos = STAGE_LOAD_NCM_PCT_START;
                 break;
             case STAGE_WAIT_NCM:
-                if(HAL::checkCameraIF() == true)
+                if(cameraUtils.checkCameraConnection() == true)
                 {
                     current_stage = STAGE_WAIT_HTTP;
                     current_bar_pos = STAGE_LOAD_HTTP_PCT_START;
-                    HAL::setCameraIFIP();
+                    cameraUtils.setCameraIP();
                     lv_label_set_text(lbl_boot_info, "等待HTTP...");
                     lv_bar_set_value(bar_boot, current_bar_pos, LV_ANIM_ON);
                     break;

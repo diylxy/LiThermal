@@ -1,6 +1,7 @@
 #include "videoPlayer.h"
 #include <sys/time.h>
 #include <semaphore.h>
+#include "videoCodec.h"
 VideoPlayer videoPlayer;
 uint8_t IR_frame_buffer[320 * 240 * 4];
 pthread_t thread_image_ref;
@@ -123,36 +124,17 @@ uint64_t getTimeStampUS()
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000L + tv.tv_usec / 1000L;
 }
-#include "stream.h"
-#include "util/log.h"
-#include "util/rate.h"
-extern "C"
-{
-#include <libavcodec/avcodec.h>
-#include <libswscale/swscale.h>
-#include <libavformat/avformat.h>
-#include <libavutil/imgutils.h>
-#include <libswscale/swscale.h>
-}
 
 #define STATE_IDLE 1
 #define STATE_PLAYING 2
 #define STATE_PAUSED 3
 
 static bool connected = false;
-static int err_count = 0;
-static unsigned long time_start = 0;
 static int current_state = STATE_IDLE;
 
 void *thread_refresh_image(void *)
 {
-    Stream stream;
-    StreamOptions options{};
-    options.method = STREAM_METHOD_NETWORK;
-    options.input_url = VIDEO_STREAM_URL;
-    options.video.sws_enable = true;
-    options.video.sws_dst_pix_fmt = AV_PIX_FMT_BGRA;
-    Rate rate(30);
+    static int err_count = 0;
     sem_wait(&sem_video);
     while (1)
     {
@@ -160,36 +142,20 @@ void *thread_refresh_image(void *)
         {
         case CMD_CONNECT:
         {
-            try
+            printf("Connceting to RTSP...\n");
+            if (codec_openStream(VIDEO_STREAM_URL))
             {
-                printf("Connceting to RTSP...\n");
-                stream.Open(options);
-                printf("Opened\n");
-                if (stream.IsOpen())
-                {
-                    current_state = STATE_PLAYING;
-                    connected = true;
-                    printf("locking lv\n");
-                    pthread_mutex_lock(&lv_mutex);
-                    printf("locking lv2\n");
-                    createImage(false);
-                    printf("locking lv3\n");
-                    pthread_mutex_unlock(&lv_mutex);
-                    printf("Stream open success\n");
-                }
-                else
-                {
-                    printf("Stream open fail\n");
-                    stream.Close();
-                    sleep(1);
-                }
+                current_state = STATE_PLAYING;
+                connected = true;
+                pthread_mutex_lock(&lv_mutex);
+                createImage(false);
+                pthread_mutex_unlock(&lv_mutex);
+                printf("Stream open success\n");
             }
-            catch (const StreamError &err)
+            else
             {
-                // current_state = STATE_IDLE;
-                connected = false;
                 printf("Stream open fail\n");
-                stream.Close();
+                codec_closeEverything();
                 sleep(1);
             }
         }
@@ -219,7 +185,7 @@ void *thread_refresh_image(void *)
                 pthread_mutex_lock(&lv_mutex);
                 destroyImage();
                 pthread_mutex_unlock(&lv_mutex);
-                stream.Close();
+                codec_closeEverything();
             }
         }
         break;
@@ -234,24 +200,26 @@ void *thread_refresh_image(void *)
             break;
         case STATE_PLAYING:
         {
-            auto frame = stream.GetFrameVideo();
-            if (frame == nullptr)
+            auto frame = codec_getFrame();
+            if (frame == NULL)
             {
+                printf("empty\n");
                 ++err_count;
                 if (err_count > 10)
                 {
                     current_state = STATE_IDLE;
                     connected = false;
-                    stream.Close();
+                    codec_closeEverything();
                 }
                 continue;
             }
             err_count = 0;
             av_image_copy_to_buffer(IR_frame_buffer, sizeof(IR_frame_buffer),
                                     (const uint8_t *const *)frame->data, (const int *)frame->linesize,
-                                    AV_PIX_FMT_RGBA, 320, 240, 1);
+                                    AV_PIX_FMT_RGBA, frame->width, frame->height, 1);
+            av_frame_free(&frame);
             lv_obj_invalidate(videoPlayer.img_obj);
-            rate.Sleep();
+            usleep(10000);
             sem_trywait(&sem_video);
         }
         break;
@@ -269,6 +237,7 @@ void VideoPlayer::init()
 {
     thread_image_ref = CMD_NONE;
     sem_init(&sem_video, 0, 0);
+    avformat_network_init();
     pthread_create(&thread_image_ref, NULL, thread_refresh_image, NULL);
 }
 
