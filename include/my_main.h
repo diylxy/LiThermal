@@ -13,9 +13,9 @@
 #ifndef CMAKE_CROSSCOMPILING
 #include <sdl/sdl.h>
 #endif
-#define ScreenWidth 240
-#define ScreenHeight 240
+
 #define VIDEO_STREAM_URL "rtsp://admin:Ab123456@192.168.64.64"
+
 #include "myHAL.h"
 #include "videoPlayer.h"
 #include "animations.h"
