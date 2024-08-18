@@ -108,13 +108,13 @@ static void createImage(bool isResume)
     lv_img_set_src(videoPlayer.img_obj, &img_ir_frame);
     lv_obj_align(videoPlayer.img_obj, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_opa(videoPlayer.img_obj, 0, 0);
-    video_anim_pop_up(isResume);
+    // video_anim_pop_up(isResume);
 }
 static void destroyImage()
 {
     if (lv_obj_is_valid(videoPlayer.img_obj))
     {
-        video_anim_fall_down();
+        lv_my_anim_fall_down(videoPlayer.img_obj);
         videoPlayer.img_obj = NULL;
     }
 }
@@ -218,6 +218,10 @@ void *thread_refresh_image(void *)
                                     (const uint8_t *const *)frame->data, (const int *)frame->linesize,
                                     AV_PIX_FMT_RGBA, frame->width, frame->height, 1);
             av_frame_free(&frame);
+            if (lv_obj_get_style_opa(videoPlayer.img_obj, 0) == 0)
+            {
+                lv_my_anim_pop_up(videoPlayer.img_obj);
+            }
             lv_obj_invalidate(videoPlayer.img_obj);
             usleep(10000);
             sem_trywait(&sem_video);
