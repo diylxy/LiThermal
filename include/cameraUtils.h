@@ -40,6 +40,7 @@ typedef struct temperature_point_t
 class CameraUtils
 {
 public:
+    bool connected = false;
     bool checkCameraConnection(); // 检查摄像头连接
     void setCameraIP();           // 设置摄像头固定IP
     void initHTTPClient();        // 初始化HTTP客户端（即设置HTTP认证）

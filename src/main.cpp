@@ -6,7 +6,8 @@ pthread_t thread_app;
 void *thread_app_func(void *)
 {
     temperature_point_t temperature_point;
-    usleep(100000);
+    while(cameraUtils.connected == false)
+        usleep(100000);
     cameraUtils.setColorPalette(IR_COLOR_PALETTE_DEFAULT);
     while (1)
     {
