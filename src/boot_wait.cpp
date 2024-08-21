@@ -1,6 +1,5 @@
 #include "my_main.h"
 extern "C" const lv_img_dsc_t bootlogo_full;
-extern "C" const lv_font_t ui_font_ali36;
 #define STAGE_LOAD_NCM_PCT_START 0
 #define STAGE_LOAD_NCM_PCT_STEP 20
 #define STAGE_LOAD_HTTP_PCT_START 380
