@@ -1,5 +1,5 @@
 #include "my_main.h"
-extern "C" const lv_img_dsc_t ui_img_loading_png;
+extern "C" const lv_img_dsc_t bootlogo_full;
 extern "C" const lv_font_t ui_font_ali36;
 #define STAGE_LOAD_NCM_PCT_START 0
 #define STAGE_LOAD_NCM_PCT_STEP 20
@@ -21,21 +21,19 @@ static const char *next_anim_json = NULL;
 void waitboot_scr_load(void)
 {
     lv_obj_t *ui_Image1 = lv_img_create(lv_scr_act());
-    lv_img_set_src(ui_Image1, &ui_img_loading_png);
+    lv_img_set_src(ui_Image1, &bootlogo_full);
     lv_obj_set_width(ui_Image1, LV_SIZE_CONTENT);  /// 1
     lv_obj_set_height(ui_Image1, LV_SIZE_CONTENT); /// 1
     lv_obj_set_align(ui_Image1, LV_ALIGN_CENTER);
+    lv_obj_fade_out(ui_Image1, 500, 0);
+    lv_obj_del_delayed(ui_Image1, 500);
     if (cameraUtils.checkCameraConnection() == true)
     {
-        lv_obj_fade_out(ui_Image1, 500, 0);
-        lv_obj_del_delayed(ui_Image1, 500);
         cameraUtils.setCameraIP();
         videoPlayer.init();
         videoPlayer.connect();
         return;
     }
-
-    lv_obj_del_delayed(ui_Image1, 40);
 
     bar_boot = lv_bar_create(lv_scr_act());
     lv_bar_set_range(bar_boot, 0, STAGE_LOAD_BAR_TOTAL);
@@ -50,7 +48,7 @@ void waitboot_scr_load(void)
 
     rlottie_boot = lv_rlottie_create_from_raw(lv_scr_act(), 260, 120, lottie_boot_to_stage1_json);
     next_anim_json = lottie_stage1_json;
-    lv_rlottie_set_play_mode(rlottie_boot, (lv_rlottie_ctrl_t)(LV_RLOTTIE_CTRL_PLAY));
+    lv_rlottie_set_play_mode(rlottie_boot, (lv_rlottie_ctrl_t)(LV_RLOTTIE_CTRL_PAUSE));
     lv_rlottie_set_current_frame(rlottie_boot, 0);
     rlottie_boot_obj = (lv_rlottie_t *)rlottie_boot;
     lv_obj_add_event_cb(rlottie_boot, [](lv_event_t *event)
@@ -85,12 +83,13 @@ void waitboot_scr_load(void)
                                 }
                             } }, LV_EVENT_READY, NULL);
     lv_obj_center(rlottie_boot);
-    lv_obj_set_y(rlottie_boot, -10);
+    lv_obj_set_y(rlottie_boot, -20);
     lv_timer_create([](lv_timer_t *t)
                     {
         switch(current_stage)
         {
             case STAGE_FIRST:
+                lv_rlottie_set_play_mode(rlottie_boot, (lv_rlottie_ctrl_t)(LV_RLOTTIE_CTRL_PLAY));
                 lv_obj_fade_in(bar_boot, 300, 0);
                 current_stage = STAGE_WAIT_NCM;
                 current_bar_pos = STAGE_LOAD_NCM_PCT_START;
