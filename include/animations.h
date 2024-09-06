@@ -14,6 +14,10 @@
 #define MY_FLY_ANIM_DEFAULT_HEIGHT 125
 #define MY_FLY_UP_ANIM_DEFAULT_TIME 700
 #define MY_FLY_DOWN_ANIM_DEFAULT_TIME 500
+// 部分自定义动画曲线函数
+int32_t my_anim_path_ease_in(const lv_anim_t *a);
+int32_t my_anim_path_ease_out(const lv_anim_t *a);
+int32_t my_anim_path_ease_in_out(const lv_anim_t *a);
 // 使用my_anim_pop_up函数添加的对象，禁止修改其userdata
 void lv_my_anim_pop_up(lv_obj_t* obj, uint16_t time = MY_POP_FALL_ANIM_DEFAULT_TIME, uint16_t delay = 0);
 // 使用lv_my_anim_fall_down函数添加的对象，禁止修改其userdata

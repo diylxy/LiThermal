@@ -15,6 +15,7 @@
 
 bool HAL::key_pressed[3] = {0, 0, 0};
 time_t HAL::key_pressed_start_time[3] = {0, 0, 0};
+bool HAL::key_press_event[4] = {0, 0, 0};
 
 static pthread_t thread_key, thread_encoder;
 static int encoder_new_move = 0;
@@ -49,6 +50,8 @@ static void *thread_refreshKey(void *)
             if (ev_key.code == KEY_ENTER)
             {
                 encoder_pressed = ev_key.value == 1;
+                if (encoder_pressed)
+                    HAL::key_press_event[3] = true;
             }
             else
             {
@@ -56,6 +59,7 @@ static void *thread_refreshKey(void *)
                 {
                     HAL::key_pressed[ev_key.code - KEY_F1] = true;
                     HAL::key_pressed_start_time[ev_key.code - KEY_F1] = ev_key.time.tv_sec;
+                    HAL::key_press_event[ev_key.code - KEY_F1] = true;
                 }
                 else
                 {
@@ -81,7 +85,7 @@ static void *thread_refreshEncoder(void *)
         read(fd_encoder, &ev_encoder, sizeof(struct input_event));
         if (ev_encoder.type == EV_REL)
         {
-            encoder_new_move += ev_encoder.value;
+            encoder_new_move -= ev_encoder.value; // 反转编码器方向
         }
     }
     return NULL;
@@ -91,7 +95,10 @@ int last_encoder_direction = 0; // 记录上次滚动方向，用于在主界面
 bool trap_encoder = true;       // 标记当前不在菜单里，此时编码器用于调节亮度
 static void encoder_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
-    data->enc_diff = encoder_new_move;
+    if (trap_encoder == false)
+        data->enc_diff = encoder_new_move;
+    else
+        data->enc_diff = 0;
     if (encoder_new_move > 0)
     {
         last_encoder_direction = 1;
@@ -117,11 +124,15 @@ static inline void initInputDevices()
     indev_drv.read_cb = encoder_read;
     /*Register the driver in LVGL and save the created input device object*/
     lv_indev_t *my_indev = lv_indev_drv_register(&indev_drv);
+    lv_group_t *group = lv_group_create();
+    lv_group_set_default(group);
+    lv_indev_set_group(my_indev, group);
     pthread_create(&thread_key, NULL, thread_refreshKey, NULL);
     pthread_create(&thread_encoder, NULL, thread_refreshEncoder, NULL);
 }
 
 void refresh_poweroff_key(); // 处理关机按钮（左侧第一个按钮），位于poweroff.cpp
+void refresh_menu_key();     // 左侧第二个按钮，button_2.cpp
 /// @brief hal线程，如按钮状态刷新
 pthread_t thread_hal;
 bool global_poweroff_request = false;
@@ -140,10 +151,15 @@ void *thread_hal_func(void *)
         {
             if (last_encoder_direction != 0)
             {
-                Backlight_step(-last_encoder_direction);
+                Backlight_step(last_encoder_direction);
                 last_encoder_direction = 0;
             }
         }
+        else
+        {
+            last_encoder_direction = 0;
+        }
+        refresh_menu_key();
         usleep(25000);
     }
 }
