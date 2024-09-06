@@ -9,8 +9,11 @@ namespace HAL
     void lv_loop();
 } // namespace HAL
 
-extern bool trap_encoder; // 标记当前不在菜单里，此时编码器用于调节亮度
-#define EXIT_MAINPAGE() trap_encoder = false
-#define BACK_TO_MAINPAGE() trap_encoder = true
-#define IN_MAINPAGE (trap_encoder == true)
-#define NOT_IN_MAINPAGE (trap_encoder == false)
+typedef enum {
+    MODE_MAINPAGE,
+    MODE_MAINMENU,
+    MODE_GALLERY,
+    MODE_CAMERA_SETTINGS,
+    MODE_SYSTEM_SETTINGS,
+}current_mode_t;
+extern current_mode_t current_mode;

@@ -64,13 +64,13 @@ static int serialWrite(int fd, uint8_t command)
 #define SERIAL_CMD_USBMODE_WIFI_CAM 0x12
 #define SERIAL_CMD_USBMODE_DIRECT 0x13
 
-int16_t PowerManager_getBatteryVoltage(int fd)
+int16_t PowerManager_getBatteryVoltage()
 {
     char buf[2];
     int len;
     int16_t result = 0;
-    serialWrite(fd, SERIAL_CMD_READ_ADC);
-    len = read(fd, buf, 2);
+    serialWrite(serial_fd, SERIAL_CMD_READ_ADC);
+    len = read(serial_fd, buf, 2);
     if (len < 0)
         return -1;
     result = buf[0];

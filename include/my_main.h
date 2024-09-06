@@ -39,7 +39,7 @@ extern const lv_font_t ui_font_fontawesome24;
 void waitboot_scr_load(lv_obj_t *parent);
 
 // 电源管理相关
-int16_t PowerManager_getBatteryVoltage(int fd);
+int16_t PowerManager_getBatteryVoltage();
 void PowerManager_init();
 void PowerManager_powerOff();
 

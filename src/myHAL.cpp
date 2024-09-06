@@ -6,6 +6,10 @@
 #include <signal.h>
 #include <linux/input.h>
 
+void refresh_poweroff_key(); // 处理关机按钮（左侧第一个按钮），位于poweroff.cpp
+void refresh_menu_key();     // 左侧第二个按钮，button_2.cpp
+void battery_card_check();   // 电池电量刷新，batteryCard.cpp
+
 #define INPUT_DEVICE_ENCODER "/dev/input/event0"
 #define INPUT_DEVICE_KEY "/dev/input/event2"
 
@@ -17,10 +21,14 @@ bool HAL::key_pressed[3] = {0, 0, 0};
 time_t HAL::key_pressed_start_time[3] = {0, 0, 0};
 bool HAL::key_press_event[4] = {0, 0, 0};
 
+int last_encoder_direction = 0; // 记录上次滚动方向，用于在主界面跟踪编码器
+current_mode_t current_mode = MODE_MAINPAGE;
+bool global_poweroff_request = false;
+
 static pthread_t thread_key, thread_encoder;
 static int encoder_new_move = 0;
 static bool encoder_pressed = false;
-
+static pthread_t thread_hal;
 // Ctrl+C退出
 void signal_exit(int signo)
 {
@@ -91,11 +99,9 @@ static void *thread_refreshEncoder(void *)
     return NULL;
 }
 // LVGL编码器读取
-int last_encoder_direction = 0; // 记录上次滚动方向，用于在主界面跟踪编码器
-bool trap_encoder = true;       // 标记当前不在菜单里，此时编码器用于调节亮度
 static void encoder_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
-    if (trap_encoder == false)
+    if (current_mode != MODE_MAINPAGE && current_mode != MODE_GALLERY)
         data->enc_diff = encoder_new_move;
     else
         data->enc_diff = 0;
@@ -130,12 +136,7 @@ static inline void initInputDevices()
     pthread_create(&thread_key, NULL, thread_refreshKey, NULL);
     pthread_create(&thread_encoder, NULL, thread_refreshEncoder, NULL);
 }
-
-void refresh_poweroff_key(); // 处理关机按钮（左侧第一个按钮），位于poweroff.cpp
-void refresh_menu_key();     // 左侧第二个按钮，button_2.cpp
 /// @brief hal线程，如按钮状态刷新
-pthread_t thread_hal;
-bool global_poweroff_request = false;
 void *thread_hal_func(void *)
 {
     while (1)
@@ -147,7 +148,8 @@ void *thread_hal_func(void *)
             usleep(500 * 1000);
             PowerManager_powerOff();
         }
-        if (trap_encoder)
+
+        if (current_mode == MODE_MAINPAGE)
         {
             if (last_encoder_direction != 0)
             {
@@ -155,11 +157,16 @@ void *thread_hal_func(void *)
                 last_encoder_direction = 0;
             }
         }
-        else
+        else if (current_mode == MODE_GALLERY)
+        {
+            // 处理相册操作
+        }
+        else // 清零提取出的编码器变化值
         {
             last_encoder_direction = 0;
         }
         refresh_menu_key();
+        battery_card_check();
         usleep(25000);
     }
 }

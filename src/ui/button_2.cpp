@@ -3,7 +3,7 @@
 // 处理中键按下事件
 #define MENU_BUTTON_2_BOX_WIDHT 230
 #define MENU_BUTTON_2_BOX_HEIGHT 136
-#define MENU_BUTTON_2_BOX_Y_SHOW 20
+#define MENU_BUTTON_2_BOX_Y_SHOW 30
 #define MENU_BUTTON_2_BUTTON_WIDTH_DEFAULT 60
 #define MENU_BUTTON_2_BUTTON_HEIGHT_DEFAULT 100
 #define MENU_BUTTON_2_BUTTON_WIDTH_FOCUSED 70
@@ -178,7 +178,7 @@ void refresh_menu_key()
 {
     if (expanded == false)
     {
-        if (HAL::key_press_event[1] == true && IN_MAINPAGE)
+        if (HAL::key_press_event[1] == true && current_mode == MODE_MAINPAGE)
         {
             expanded = true;
             close_for_opening_submenu = false;
@@ -187,7 +187,7 @@ void refresh_menu_key()
             card_menuPage_create();
             card_menuPage.move(0, MENU_BUTTON_2_BOX_Y_SHOW);
             card_menuPage.size(MENU_BUTTON_2_BOX_WIDHT, MENU_BUTTON_2_BOX_HEIGHT);
-            EXIT_MAINPAGE();
+            current_mode = MODE_MAINMENU;
             UNLOCKLV();
         }
         else
@@ -211,13 +211,12 @@ void refresh_menu_key()
         {
             if (close_for_opening_submenu == false)
             {
-                BACK_TO_MAINPAGE();
+                current_mode = MODE_MAINPAGE;
             }
             else
             {
                 printf("Clicked %d\n", selected_menu_number);
-                BACK_TO_MAINPAGE();
-                // open menu selected_menu_number
+                current_mode = MODE_MAINPAGE;//TODO: open menu selected_menu_number
             }
             selected_menu_number = -1;
             close_for_opening_submenu = false;
