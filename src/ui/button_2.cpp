@@ -13,31 +13,6 @@ static bool close_for_opening_submenu = false;
 static int selected_menu_number = -1;
 static bool expanded = false;
 
-static void lv_anim_size_ease_out(lv_obj_t *obj, lv_coord_t w, lv_coord_t h, uint16_t time, uint16_t delay)
-{
-    lv_anim_t a;
-    int16_t p;
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, obj);
-    lv_anim_set_path_cb(&a, my_anim_path_ease_out);
-    lv_anim_set_time(&a, time);
-    lv_anim_set_delay(&a, delay);
-    p = lv_obj_get_style_width(obj, 0);
-    if (p != w)
-    {
-        lv_anim_set_values(&a, p, w);
-        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_obj_set_width);
-        lv_anim_start(&a);
-    }
-    p = lv_obj_get_style_height(obj, 0);
-    if (p != h)
-    {
-        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_obj_set_height);
-        lv_anim_set_values(&a, p, h);
-        lv_anim_start(&a);
-    }
-}
-
 void event_button_clicked_cb(lv_event_t *e)
 {
     lv_obj_t *target = lv_event_get_target(e);
@@ -50,11 +25,11 @@ void event_button_clicked_cb(lv_event_t *e)
         break;
     case LV_EVENT_FOCUSED:
         if (expanded)
-            lv_anim_size_ease_out(target, MENU_BUTTON_2_BUTTON_WIDTH_FOCUSED, MENU_BUTTON_2_BUTTON_HEIGHT_FOCUSED, 500, 0);
+            lv_anim_size(target, MENU_BUTTON_2_BUTTON_WIDTH_FOCUSED, MENU_BUTTON_2_BUTTON_HEIGHT_FOCUSED, 500, 0);
         break;
     case LV_EVENT_DEFOCUSED:
         if (expanded)
-            lv_anim_size_ease_out(target, MENU_BUTTON_2_BUTTON_WIDTH_DEFAULT, MENU_BUTTON_2_BUTTON_HEIGHT_DEFAULT, 500, 0);
+            lv_anim_size(target, MENU_BUTTON_2_BUTTON_WIDTH_DEFAULT, MENU_BUTTON_2_BUTTON_HEIGHT_DEFAULT, 500, 0);
         break;
     default:
         break;
@@ -67,7 +42,7 @@ void menu_button_2_construct(lv_obj_t *parent)
     lv_obj_set_flex_flow(parent, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(parent, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_END, LV_FLEX_ALIGN_END);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE); /// Flags
-    lv_obj_set_style_bg_opa(parent, 128, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(parent, 160, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(parent, 0, 0);
 
     lv_obj_t *ui_Button2 = lv_btn_create(parent);
@@ -173,22 +148,37 @@ static void card_menuPage_create()
         lv_group_focus_obj(lv_obj_get_child(card_menuPage.obj, 0));
     }
 }
+void menu_basic_show();
+void menu_basic_hide();
 
 void refresh_menu_key()
 {
     if (expanded == false)
     {
-        if (HAL::key_press_event[1] == true && current_mode == MODE_MAINPAGE)
+        if (HAL::key_press_event[1] == true)
         {
-            expanded = true;
-            close_for_opening_submenu = false;
             HAL::key_press_event[1] = false;
-            LOCKLV();
-            card_menuPage_create();
-            card_menuPage.move(0, MENU_BUTTON_2_BOX_Y_SHOW);
-            card_menuPage.size(MENU_BUTTON_2_BOX_WIDHT, MENU_BUTTON_2_BOX_HEIGHT);
-            current_mode = MODE_MAINMENU;
-            UNLOCKLV();
+            switch (current_mode)
+            {
+            case MODE_MAINPAGE:
+                expanded = true;
+                close_for_opening_submenu = false;
+                LOCKLV();
+                card_menuPage_create();
+                lv_anim_size(card_menuPage.obj, MENU_BUTTON_2_BOX_WIDHT, MENU_BUTTON_2_BOX_HEIGHT, 500, 0);
+                lv_anim_move(card_menuPage.obj, 0, MENU_BUTTON_2_BOX_Y_SHOW, 500, 0);
+                current_mode = MODE_MAINMENU;
+                UNLOCKLV();
+                break;
+            case MODE_CAMERA_SETTINGS:
+                LOCKLV();
+                menu_basic_hide();
+                UNLOCKLV();
+                current_mode = MODE_MAINPAGE;
+                break;
+            default:
+                break;
+            }
         }
         else
         {
@@ -198,7 +188,7 @@ void refresh_menu_key()
                 {
                     // 已收起，删除widget
                     LOCKLV();
-                    lv_obj_del(card_menuPage.obj);
+                    lv_obj_del_delayed(card_menuPage.obj, 500);
                     card_menuPage.obj = NULL;
                     UNLOCKLV();
                 }
@@ -216,14 +206,27 @@ void refresh_menu_key()
             else
             {
                 printf("Clicked %d\n", selected_menu_number);
-                current_mode = MODE_MAINPAGE;//TODO: open menu selected_menu_number
+                switch (selected_menu_number)
+                {
+                case 1:
+                    current_mode = MODE_CAMERA_SETTINGS; // TODO: open menu selected_menu_number
+                    LOCKLV();
+                    menu_basic_show();
+                    UNLOCKLV();
+                    break;
+                default:
+                    current_mode = MODE_MAINPAGE; // TODO: open menu selected_menu_number
+                    break;
+                }
             }
             selected_menu_number = -1;
             close_for_opening_submenu = false;
             HAL::key_press_event[1] = false;
             expanded = false;
-            card_menuPage.size(0, 0);
-            card_menuPage.move(-50, 0);
+            LOCKLV();
+            lv_anim_size(card_menuPage.obj, 0, 0, 500, 0);
+            lv_anim_move(card_menuPage.obj, -50, 0, 500, 0);
+            UNLOCKLV();
         }
     }
 }

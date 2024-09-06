@@ -139,7 +139,7 @@ void lv_anim_move(lv_obj_t *obj, lv_coord_t x, lv_coord_t y, uint16_t time, uint
     int16_t p;
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
-    lv_anim_set_path_cb(&a, my_anim_path_ease_in_out);
+    lv_anim_set_path_cb(&a, my_anim_path_ease_out);
     lv_anim_set_time(&a, time);
     lv_anim_set_delay(&a, delay);
     p = lv_obj_get_style_x(obj, 0);
@@ -164,7 +164,7 @@ void lv_anim_size(lv_obj_t *obj, lv_coord_t w, lv_coord_t h, uint16_t time, uint
     int16_t p;
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
-    lv_anim_set_path_cb(&a, my_anim_path_ease_in_out);
+    lv_anim_set_path_cb(&a, my_anim_path_ease_out);
     lv_anim_set_time(&a, time);
     lv_anim_set_delay(&a, delay);
     p = lv_obj_get_style_width(obj, 0);

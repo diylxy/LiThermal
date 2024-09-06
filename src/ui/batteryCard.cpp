@@ -33,8 +33,10 @@ void battery_card_check()
         if (expanded == false)
         {
             expanded = true;
+            LOCKLV();
             battery_card_create();
             card_Battery.move(BATTERY_CARD_X, BATTERY_CARD_SHOW_Y);
+            UNLOCKLV();
             cnt = 10;
         }
         ++cnt;
@@ -43,7 +45,9 @@ void battery_card_check()
             int16_t voltage = PowerManager_getBatteryVoltage();
             if (voltage > 0)
             {
+                LOCKLV();
                 lv_label_set_text_fmt(lv_obj_get_child(card_Battery.obj, 0), "%d.%02dV", voltage / 1000, voltage % 1000 / 10);
+                UNLOCKLV();
             }
             cnt = 0;
         }
@@ -53,7 +57,9 @@ void battery_card_check()
         if (expanded)
         {
             expanded = false;
+            LOCKLV();
             card_Battery.move(BATTERY_CARD_X, BATTERY_CARD_HIDE_Y);
+            UNLOCKLV();
         }
     }
 }

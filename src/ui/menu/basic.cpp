@@ -86,7 +86,16 @@ static void card_settings_disp(lv_obj_t* ui_Panel1) {
     lv_obj_set_y(ui_Label3, 72);
     lv_obj_set_align(ui_Label3, LV_ALIGN_TOP_MID);
     lv_label_set_text(ui_Label3, "位置");
-
+    lv_obj_set_style_bg_opa(ui_Panel1, 160, 0);
+    lv_obj_set_style_border_width(ui_Panel1, 0, 0);
+    lv_obj_set_style_bg_opa(ui_Checkbox1, 128, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_opa(ui_Checkbox2, 128, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_opa(ui_Checkbox3, 128, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_opa(ui_Checkbox4, 128, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_opa(ui_Checkbox5, 128, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_opa(ui_Roller1, 128, 0);
+    lv_obj_set_style_bg_opa(ui_Roller2, 128, 0);
+    lv_obj_set_style_bg_opa(ui_Roller3, 128, 0);
 }
 
 #define MENU_BASIC_CARD_WIDTH 300
@@ -95,16 +104,13 @@ static void card_settings_disp(lv_obj_t* ui_Panel1) {
 
 void menu_basic_show()
 {
-    mycardMenuBasic.create(lv_layer_top(), 0, 0, 0, 0, LV_ALIGN_TOP_MID);
+    mycardMenuBasic.create(lv_layer_top(), 0, MENU_BASIC_CARD_POS_Y, MENU_BASIC_CARD_WIDTH, MENU_BASIC_CARD_HEIGHT, LV_ALIGN_TOP_MID);
     card_settings_disp(mycardMenuBasic.obj);
-    mycardMenuBasic.move(0, MENU_BASIC_CARD_POS_Y);
-    mycardMenuBasic.size(MENU_BASIC_CARD_WIDTH, MENU_BASIC_CARD_HEIGHT);
+    lv_group_focus_obj(lv_obj_get_child(mycardMenuBasic.obj, 0));
+    mycardMenuBasic.show();
 }
 
 void menu_basic_hide()
 {
-    mycardMenuBasic.move(0, 0);
-    mycardMenuBasic.size(0, 0);
-    lv_obj_del_delayed(mycardMenuBasic.obj, 800);
-    mycardMenuBasic.obj = NULL;
+    mycardMenuBasic.del();
 }

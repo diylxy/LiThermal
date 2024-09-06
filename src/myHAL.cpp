@@ -226,6 +226,6 @@ void HAL::lv_loop()
         LOCKLV();
         lv_task_handler();
         UNLOCKLV();
-        usleep(2000);
+        usleep(5000);
     }
 }
