@@ -67,9 +67,9 @@ void *thread_refresh_image(void *)
                 current_state = STATE_PLAYING;
                 connected = true;
                 cameraUtils.connected = true;
-                pthread_mutex_lock(&lv_mutex);
+                LOCKLV();
                 createImage(false);
-                pthread_mutex_unlock(&lv_mutex);
+                UNLOCKLV();
                 printf("Stream open success\n");
             }
             else
@@ -102,9 +102,9 @@ void *thread_refresh_image(void *)
             {
                 current_state = STATE_IDLE;
                 connected = false;
-                pthread_mutex_lock(&lv_mutex);
+                LOCKLV();
                 destroyImage();
-                pthread_mutex_unlock(&lv_mutex);
+                UNLOCKLV();
                 codec_closeEverything();
             }
         }
@@ -120,6 +120,7 @@ void *thread_refresh_image(void *)
             break;
         case STATE_PLAYING:
         {
+            // printf("[TRACE] Playing begin\n");
             auto frame = codec_getFrame();
             if (frame == NULL)
             {
@@ -133,6 +134,7 @@ void *thread_refresh_image(void *)
                 }
                 continue;
             }
+            // printf("[TRACE] Got frame\n");
             err_count = 0;
             av_image_copy_to_buffer(IR_frame_buffer, sizeof(IR_frame_buffer),
                                     (const uint8_t *const *)frame->data, (const int *)frame->linesize,
@@ -143,7 +145,7 @@ void *thread_refresh_image(void *)
                 lv_obj_fade_in(videoPlayer.img_obj, 500, 0);
             }
             lv_obj_invalidate(videoPlayer.img_obj);
-            usleep(10000);
+            usleep(20000);
             sem_trywait(&sem_video);
         }
         break;

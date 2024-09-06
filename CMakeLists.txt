@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.12.4)
+cmake_minimum_required(VERSION 3.7.4)
 
 project(thermalcamera)
-
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 file(GLOB_RECURSE SRC_DIR_LIST "src/*.cpp" "src/*.c")	#遍历获取source/路径下所有的*.cpp和*.c文件列表
 
 add_compile_definitions(LV_CONF_INCLUDE_SIMPLE)	#添加宏定义
@@ -17,6 +17,7 @@ set(LV_CONF_PATH "../../include/lv_conf.h")	#设置lv_conf.h的路径
 add_executable(${PROJECT_NAME} ${SRC_DIR_LIST})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+target_include_directories(${PROJECT_NAME} PUBLIC linux_include)
 target_include_directories(${PROJECT_NAME} PUBLIC libs)
 target_include_directories(${PROJECT_NAME} PUBLIC libs/lvgl)
 target_include_directories(${PROJECT_NAME} PUBLIC libs/lv_drivers)

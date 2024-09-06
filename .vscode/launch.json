@@ -1,0 +1,22 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "Attach to gdbserver",
+            "gdbpath": "/usr/bin/gdb-multiarch",
+            "executable": "${workspaceRoot}/build/thermalcamera",
+            "target": "127.0.0.1:12345",
+            "remote": true,
+            "printCalls": true,
+            "cwd": "${workspaceRoot}",
+            "valuesFormatting": "parseText",
+            "autorun": ["set sysroot /home/lxy/Desktop/tina-sdk/out/t113-100ask/staging_dir/target/rootfs/"],
+            "preLaunchTask": "adb run",
+        }
+    ]
+}

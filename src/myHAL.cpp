@@ -87,9 +87,19 @@ static void *thread_refreshEncoder(void *)
     return NULL;
 }
 // LVGL编码器读取
+int last_encoder_direction = 0; // 记录上次滚动方向，用于在主界面跟踪编码器
+bool trap_encoder = true;       // 标记当前不在菜单里，此时编码器用于调节亮度
 static void encoder_read(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
     data->enc_diff = encoder_new_move;
+    if (encoder_new_move > 0)
+    {
+        last_encoder_direction = 1;
+    }
+    else if (encoder_new_move < 0)
+    {
+        last_encoder_direction = -1;
+    }
     encoder_new_move = 0;
 
     if (encoder_pressed)
@@ -110,10 +120,40 @@ static inline void initInputDevices()
     pthread_create(&thread_key, NULL, thread_refreshKey, NULL);
     pthread_create(&thread_encoder, NULL, thread_refreshEncoder, NULL);
 }
+
+void refresh_poweroff_key(); // 处理关机按钮（左侧第一个按钮），位于poweroff.cpp
+/// @brief hal线程，如按钮状态刷新
+pthread_t thread_hal;
+bool global_poweroff_request = false;
+void *thread_hal_func(void *)
+{
+    while (1)
+    {
+        refresh_poweroff_key();
+        if (global_poweroff_request == true)
+        {
+            global_poweroff_request = false;
+            usleep(500 * 1000);
+            PowerManager_powerOff();
+        }
+        if (trap_encoder)
+        {
+            if (last_encoder_direction != 0)
+            {
+                Backlight_step(-last_encoder_direction);
+                last_encoder_direction = 0;
+            }
+        }
+        usleep(25000);
+    }
+}
 // 初始化HAL
 void HAL::init()
 {
     static lv_disp_draw_buf_t lv_drawbuf;
+    // 硬件初始化
+    PowerManager_init();
+    // 软件初始化
     lv_init();
     printf("Hello World\n");
     /*Initialize and register a display driver*/
@@ -150,15 +190,19 @@ void HAL::init()
     initInputDevices();
     lv_disp_draw_buf_init(&lv_drawbuf, buf, NULL, 320 * 240 * 4);
     signal(SIGINT, signal_exit);
+    // HAL 线程
+    pthread_create(&thread_hal, NULL, thread_hal_func, NULL);
+    // 背光初始化
+    Backlight_init();
 }
 // LVGL定时器处理
 void HAL::lv_loop()
 {
     while (true)
     {
-        pthread_mutex_lock(&lv_mutex);
+        LOCKLV();
         lv_task_handler();
-        pthread_mutex_unlock(&lv_mutex);
+        UNLOCKLV();
         usleep(2000);
     }
 }

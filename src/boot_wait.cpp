@@ -17,15 +17,15 @@ static lv_rlottie_t *rlottie_boot_obj;
 static const char *next_anim_json = NULL;
 #include "lottie_jsons.h"
 #include <rlottie_capi.h>
-void waitboot_scr_load(void)
+void waitboot_scr_load(lv_obj_t *parent)
 {
-    lv_obj_t *ui_Image1 = lv_img_create(lv_scr_act());
+    lv_obj_t *ui_Image1 = lv_img_create(parent);
     lv_img_set_src(ui_Image1, &bootlogo_full);
     lv_obj_set_width(ui_Image1, LV_SIZE_CONTENT);  /// 1
     lv_obj_set_height(ui_Image1, LV_SIZE_CONTENT); /// 1
     lv_obj_set_align(ui_Image1, LV_ALIGN_CENTER);
     lv_obj_fade_out(ui_Image1, 500, 0);
-    lv_obj_del_delayed(ui_Image1, 500);
+    lv_obj_del_delayed(ui_Image1, 540);
     if (cameraUtils.checkCameraConnection() == true)
     {
         cameraUtils.setCameraIP();
@@ -34,7 +34,7 @@ void waitboot_scr_load(void)
         return;
     }
 
-    bar_boot = lv_bar_create(lv_scr_act());
+    bar_boot = lv_bar_create(parent);
     lv_bar_set_range(bar_boot, 0, STAGE_LOAD_BAR_TOTAL);
     lv_bar_set_value(bar_boot, current_bar_pos, LV_ANIM_OFF);
     lv_obj_set_width(bar_boot, 220);
@@ -45,7 +45,7 @@ void waitboot_scr_load(void)
     lv_obj_set_style_opa(bar_boot, 0, 0);
     lv_obj_set_style_anim_time(bar_boot, 500, 0);
 
-    rlottie_boot = lv_rlottie_create_from_raw(lv_scr_act(), 260, 120, lottie_boot_to_stage1_json);
+    rlottie_boot = lv_rlottie_create_from_raw(parent, 260, 120, lottie_boot_to_stage1_json);
     next_anim_json = lottie_stage1_json;
     lv_rlottie_set_play_mode(rlottie_boot, (lv_rlottie_ctrl_t)(LV_RLOTTIE_CTRL_PAUSE));
     lv_rlottie_set_current_frame(rlottie_boot, 0);

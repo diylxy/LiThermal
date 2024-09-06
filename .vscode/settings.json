@@ -1,6 +1,14 @@
 {
     "files.associations": {
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "fcntl.h": "c",
+        "termios.h": "c",
+        "sunxi_display2.h": "c",
+        "errno.h": "c",
+        "unistd.h": "c",
+        "stdint.h": "c",
+        "inttypes.h": "c"
     },
-    "C_Cpp.default.compilerPath": "/home/lxy/Desktop/tina-sdk/prebuilt/gcc/linux-x86/arm/toolchain-sunxi-musl/toolchain/bin/arm-openwrt-linux-gcc"
+    "C_Cpp.default.compilerPath": "/home/lxy/Desktop/tina-sdk/prebuilt/gcc/linux-x86/arm/toolchain-sunxi-musl/toolchain/bin/arm-openwrt-linux-gcc",
+    "debug.onTaskErrors": "abort",
 }

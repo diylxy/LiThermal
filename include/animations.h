@@ -34,6 +34,16 @@ public:
     lv_obj_t *obj = NULL;
     MyCard(lv_obj_t *parent, lv_coord_t x = 0, lv_coord_t y = 0, lv_coord_t w = 0, lv_coord_t h = 0, lv_align_t align = LV_ALIGN_TOP_LEFT)
     {
+        if (parent != NULL)
+        {
+            create(parent, x, y, w, h, align);
+        }
+    }
+    MyCard(){}
+    void create(lv_obj_t* parent, lv_coord_t x = 0, lv_coord_t y = 0, lv_coord_t w = 0, lv_coord_t h = 0, lv_align_t align = LV_ALIGN_TOP_LEFT)
+    {
+        if (obj != NULL)
+            return;
         obj = lv_obj_create(parent);
         lv_obj_set_size(obj, w, h);
         lv_obj_align(obj, align, x, y);
@@ -41,6 +51,8 @@ public:
     }
     void show(int anim_type = CARD_ANIM_POP_UP)
     {
+        if (obj == NULL)
+            return;
         if (anim_type == 0)
             lv_obj_set_style_opa(obj, LV_OPA_COVER, 0);
         else if(anim_type == 1)
@@ -50,6 +62,8 @@ public:
     }
     void hide(int anim_type = CARD_ANIM_FALL_DOWN)
     {
+        if (obj == NULL)
+            return;
         if (anim_type == CARD_ANIM_FALL_DOWN)
             lv_my_anim_fall_down(obj, MY_POP_FALL_ANIM_DEFAULT_TIME, 0, false);
         else if (anim_type == CARD_ANIM_FLY_DOWN)
@@ -59,6 +73,8 @@ public:
     }
     void size(lv_coord_t w, lv_coord_t h, bool animated = true)
     {
+        if (obj == NULL)
+            return;
         if (animated)
             lv_anim_size(obj, w, h);
         else
@@ -66,6 +82,8 @@ public:
     }
     void move(lv_coord_t x, lv_coord_t y, bool animated = true)
     {
+        if (obj == NULL)
+            return;
         if(animated)
             lv_anim_move(obj, x, y);
         else
@@ -73,6 +91,8 @@ public:
     }
     void del(int anim_type = CARD_ANIM_FALL_DOWN)
     {
+        if (obj == NULL)
+            return;
         if (lv_obj_is_valid(obj))
         {
             if (anim_type == CARD_ANIM_FALL_DOWN)
