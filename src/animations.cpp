@@ -84,6 +84,7 @@ void lv_my_anim_pop_up(lv_obj_t *obj, uint16_t time, uint16_t delay)
 {
     static lv_anim_t a;
     lv_coord_t y_start;
+    lv_anim_del(obj, NULL);
     lv_obj_set_style_transform_pivot_x(obj, lv_obj_get_width(obj), 0);
     lv_anim_init(&a);
     lv_anim_set_time(&a, time);
@@ -105,6 +106,7 @@ void lv_my_anim_fall_down(lv_obj_t *obj, uint16_t time, uint16_t delay, bool del
 {
     static lv_anim_t a;
     lv_coord_t y_start;
+    lv_anim_del(obj, NULL);
     lv_obj_set_style_transform_pivot_x(obj, 0, 0);
     lv_anim_init(&a);
     lv_anim_set_time(&a, time);
@@ -186,6 +188,7 @@ void lv_anim_fly_up(lv_obj_t *obj, lv_coord_t h, uint16_t time, uint16_t delay)
 {
     lv_anim_t a;
     int16_t p;
+    lv_anim_del(obj, NULL);
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
     p = lv_obj_get_style_y(obj, 0);
@@ -201,6 +204,7 @@ void lv_anim_fall_fly(lv_obj_t *obj, lv_coord_t h, uint16_t time, uint16_t delay
 {
     lv_anim_t a;
     int16_t p;
+    lv_anim_del(obj, NULL);
     lv_anim_init(&a);
     lv_anim_set_var(&a, obj);
     p = lv_obj_get_style_y(obj, 0);

@@ -7,7 +7,8 @@
         "errno.h": "c",
         "unistd.h": "c",
         "stdint.h": "c",
-        "inttypes.h": "c"
+        "inttypes.h": "c",
+        "random": "cpp"
     },
     "C_Cpp.default.compilerPath": "/home/lxy/Desktop/tina-sdk/prebuilt/gcc/linux-x86/arm/toolchain-sunxi-musl/toolchain/bin/arm-openwrt-linux-gcc",
     "debug.onTaskErrors": "abort",

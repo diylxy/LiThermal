@@ -150,6 +150,8 @@ static void card_menuPage_create()
 }
 void menu_basic_show();
 void menu_basic_hide();
+void menu_system_show();
+void menu_system_hide();
 
 void refresh_menu_key()
 {
@@ -173,6 +175,12 @@ void refresh_menu_key()
             case MODE_CAMERA_SETTINGS:
                 LOCKLV();
                 menu_basic_hide();
+                UNLOCKLV();
+                current_mode = MODE_MAINPAGE;
+                break;
+            case MODE_SYSTEM_SETTINGS:
+                LOCKLV();
+                menu_system_hide();
                 UNLOCKLV();
                 current_mode = MODE_MAINPAGE;
                 break;
@@ -212,6 +220,12 @@ void refresh_menu_key()
                     current_mode = MODE_CAMERA_SETTINGS; // TODO: open menu selected_menu_number
                     LOCKLV();
                     menu_basic_show();
+                    UNLOCKLV();
+                    break;
+                case 2:
+                    current_mode = MODE_SYSTEM_SETTINGS; // TODO: open menu selected_menu_number
+                    LOCKLV();
+                    menu_system_show();
                     UNLOCKLV();
                     break;
                 default:
