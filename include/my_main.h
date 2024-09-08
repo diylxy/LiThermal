@@ -15,6 +15,8 @@
 #endif
 
 #define VIDEO_STREAM_URL "rtsp://admin:Ab123456@192.168.64.64"
+#define GALLERY_PATH "/mnt/UDISK/DCIM"                  // 如需修改存储位置，需同时修改 lv_conf.h: LV_FS_STDIO_PATH
+// 注意：图像命名格式固定为：CAP+5位数字.[jpeg/mjpeg]
 
 #include "myHAL.h"
 extern bool global_poweroff_request;       // main.cpp
@@ -48,6 +50,6 @@ void Backlight_init();
 void Backlight_set(int new_backlight);
 void Backlight_step(int direction);
 
-// 背光UI
-void ui_brightnessSlider_create();
-void ui_brightnessSlider_loop(int current_brightness);
+/// @brief 相册事件检查
+/// @param has_hal_go_back_event 如果为true，代表返回（菜单）按键按下
+void menu_gallery_loop(bool has_hal_go_back_event);

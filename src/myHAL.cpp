@@ -157,9 +157,10 @@ void *thread_hal_func(void *)
                 last_encoder_direction = 0;
             }
         }
-        else if (current_mode == MODE_GALLERY)
+        else if (current_mode == MODE_GALLERY || current_mode == MODE_GALLERY_MENU)
         {
             // 处理相册操作
+            menu_gallery_loop(false);           // false表示没有返回事件
         }
         else // 清零提取出的编码器变化值
         {

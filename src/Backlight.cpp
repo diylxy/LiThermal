@@ -65,6 +65,9 @@ static void Backlight_setCurrent_internal(int new_backlight)
 
 pthread_t thread_backlight;
 
+// 背光UI
+void ui_brightnessSlider_create();
+void ui_brightnessSlider_loop(int current_brightness);
 void *thread_backlight_func(void *param)
 {
     (void)param; // unused

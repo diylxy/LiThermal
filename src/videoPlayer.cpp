@@ -140,11 +140,13 @@ void *thread_refresh_image(void *)
                                     (const uint8_t *const *)frame->data, (const int *)frame->linesize,
                                     AV_PIX_FMT_RGBA, frame->width, frame->height, 1);
             av_frame_free(&frame);
+            LOCKLV();
             if (lv_obj_get_style_opa(videoPlayer.img_obj, 0) == 0)
             {
                 lv_obj_fade_in(videoPlayer.img_obj, 500, 0);
             }
             lv_obj_invalidate(videoPlayer.img_obj);
+            UNLOCKLV();
             usleep(20000);
             sem_trywait(&sem_video);
         }

@@ -148,6 +148,8 @@ static void card_menuPage_create()
         lv_group_focus_obj(lv_obj_get_child(card_menuPage.obj, 0));
     }
 }
+void menu_gallery_show();
+void menu_gallery_loop(bool has_hal_go_back_event);
 void menu_basic_show();
 void menu_basic_hide();
 void menu_system_show();
@@ -171,6 +173,10 @@ void refresh_menu_key()
                 lv_anim_move(card_menuPage.obj, 0, MENU_BUTTON_2_BOX_Y_SHOW, 500, 0);
                 current_mode = MODE_MAINMENU;
                 UNLOCKLV();
+                break;
+            case MODE_GALLERY:
+            case MODE_GALLERY_MENU:
+                menu_gallery_loop(true);            // 在这里处理事件
                 break;
             case MODE_CAMERA_SETTINGS:
                 LOCKLV();
@@ -213,9 +219,14 @@ void refresh_menu_key()
             }
             else
             {
-                printf("Clicked %d\n", selected_menu_number);
                 switch (selected_menu_number)
                 {
+                case 0:
+                    current_mode = MODE_GALLERY;
+                    LOCKLV();
+                    menu_gallery_show();
+                    UNLOCKLV();
+                    break;
                 case 1:
                     current_mode = MODE_CAMERA_SETTINGS; // TODO: open menu selected_menu_number
                     LOCKLV();
