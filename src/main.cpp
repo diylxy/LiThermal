@@ -30,12 +30,12 @@ void *thread_ui_func(void *)
 }
 int main()
 {
-    sleep(1);       // Why?
+    sleep(1); // Why?
+    system("mkdir " GALLERY_PATH);
     pthread_mutex_init(&lv_mutex, NULL);
     HAL::init();
-    lv_obj_t *scr_new = lv_obj_create(NULL);
-    lv_scr_load_anim(scr_new, LV_SCR_LOAD_ANIM_NONE, 0, 0, true);
-    lv_obj_clear_flag(scr_new, LV_OBJ_FLAG_SCROLLABLE);
+    readFiles(GALLERY_PATH);
+    lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(lv_layer_top(), LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(lv_layer_sys(), LV_OBJ_FLAG_SCROLLABLE);
     // test_anim_obj = lv_obj_create(lv_layer_sys());
@@ -44,8 +44,8 @@ int main()
     // lv_obj_set_style_border_width(test_anim_obj, 0, 0);
     // lv_obj_set_pos(test_anim_obj, 0, 0);
     // lv_obj_set_size(test_anim_obj, 3, 3);
-    waitboot_scr_load(scr_new);
     printf("Loop begin\n");
+    waitboot_scr_load(lv_scr_act());
     pthread_create(&thread_ui, NULL, thread_ui_func, NULL);
     cameraUtils.initHTTPClient();
     pthread_create(&thread_app, NULL, thread_app_func, NULL);

@@ -23,7 +23,8 @@ extern bool global_poweroff_request;       // main.cpp
 #include "videoPlayer.h"
 #include "animations.h"
 #include "cameraUtils.h"
-
+#include "utils/filenameAllocator.h"
+#include "ui.h"
 extern pthread_mutex_t lv_mutex;
 #define LOCKLV() pthread_mutex_lock(&lv_mutex)
 #define UNLOCKLV() pthread_mutex_unlock(&lv_mutex)

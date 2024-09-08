@@ -156,15 +156,27 @@ void *thread_hal_func(void *)
                 Backlight_step(last_encoder_direction);
                 last_encoder_direction = 0;
             }
+            if (HAL::key_press_event[2])
+            {
+                // 开始/停止录像
+                HAL::key_press_event[2] = false;
+            }
+            if (HAL::key_press_event[3])
+            {
+                camera_take_photo_from_stream();
+                HAL::key_press_event[3] = false;
+            }
         }
         else if (current_mode == MODE_GALLERY || current_mode == MODE_GALLERY_MENU)
         {
             // 处理相册操作
-            menu_gallery_loop(false);           // false表示没有返回事件
+            menu_gallery_loop(false); // false表示没有返回事件
         }
         else // 清零提取出的编码器变化值
         {
             last_encoder_direction = 0;
+            HAL::key_press_event[2] = false;
+            HAL::key_press_event[3] = false;
         }
         refresh_menu_key();
         battery_card_check();

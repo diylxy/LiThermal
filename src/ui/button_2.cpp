@@ -223,24 +223,22 @@ void refresh_menu_key()
                 {
                 case 0:
                     current_mode = MODE_GALLERY;
-                    LOCKLV();
-                    menu_gallery_show();
-                    UNLOCKLV();
+                    menu_gallery_show();        // 这里不需要锁定UI线程
                     break;
                 case 1:
-                    current_mode = MODE_CAMERA_SETTINGS; // TODO: open menu selected_menu_number
+                    current_mode = MODE_CAMERA_SETTINGS;
                     LOCKLV();
                     menu_basic_show();
                     UNLOCKLV();
                     break;
                 case 2:
-                    current_mode = MODE_SYSTEM_SETTINGS; // TODO: open menu selected_menu_number
+                    current_mode = MODE_SYSTEM_SETTINGS;
                     LOCKLV();
                     menu_system_show();
                     UNLOCKLV();
                     break;
                 default:
-                    current_mode = MODE_MAINPAGE; // TODO: open menu selected_menu_number
+                    current_mode = MODE_MAINPAGE;
                     break;
                 }
             }

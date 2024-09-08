@@ -86,6 +86,7 @@ void lv_fs_stdio_init(void)
     fs_drv.dir_close_cb = fs_dir_close;
     fs_drv.dir_open_cb = fs_dir_open;
     fs_drv.dir_read_cb = fs_dir_read;
+    printf("[DEBUG] REG\n");
 
     lv_fs_drv_register(&fs_drv);
 }
@@ -115,7 +116,7 @@ static void * fs_open(lv_fs_drv_t * drv, const char * path, lv_fs_mode_t mode)
 
     char buf[MAX_PATH_LEN];
     lv_snprintf(buf, sizeof(buf), LV_FS_STDIO_PATH "%s", path);
-
+    printf("[DEBUG] %s\n", buf);
     return fopen(buf, flags);
 }
 

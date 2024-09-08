@@ -2,8 +2,23 @@
 
 static lv_obj_t *image_obj[5];
 static lv_color_t canvas_buffer[5][240 * 180];
+static lv_color_t canvas_fullscreen_buffer[320 * 240];
 static int image_src_id[5];
 static lv_draw_img_dsc_t canvas_draw_dsc;
+lv_obj_t *lbl_fileid = NULL;
+static int totalImages = 0;
+static int centerImageID = 0; // 当前屏幕中间显示的图像在数组中的位置
+typedef enum
+{
+    GALLERY_STATE_LIST,
+    GALLERY_STATE_FULLSCREEN,
+    GALLERY_STATE_MENU,
+} gallery_state_t;
+#define GALLERY_CARD_SHOW_Y -13
+#define GALLERY_CARD_HIDE_Y -43
+gallery_state_t current_state = GALLERY_STATE_LIST;
+MyCard card_gallery;
+
 static int image_pointer_left = 0; // 左边第一个的位置
 static int image_spare_left = 0;   // 左边空闲出的控件个数
 static const int image_pos_x_lut[4] = {20, 25, 35, 50};
@@ -27,10 +42,75 @@ static void lv_anim_opa(lv_obj_t *obj, lv_opa_t opa, uint16_t time, uint16_t del
     lv_anim_start(&a);
 }
 
+typedef enum
+{
+    PHOTO_TYPE_FILE_NOT_FOUND,
+    PHOTO_TYPE_RAW_CAPTURE,
+    PHOTO_TYPE_SCREENSHOT,
+    PHOTO_TYPE_VIDEO,
+} photo_type_t;
+
+static photo_type_t getPhotoType(int id)
+{
+    char filename_buffer[128];
+    struct stat s;
+    sprintf(filename_buffer, GALLERY_PATH "/CAP%05d.jpeg", id);
+    if (stat(filename_buffer, &s) != 0)
+        return PHOTO_TYPE_FILE_NOT_FOUND;
+    sprintf(filename_buffer, GALLERY_PATH "/CAP%05d.raw", id);
+    if (stat(filename_buffer, &s) == 0)
+        return PHOTO_TYPE_RAW_CAPTURE;
+    sprintf(filename_buffer, GALLERY_PATH "/CAP%05d.mjpeg", id);
+    if (stat(filename_buffer, &s) == 0)
+        return PHOTO_TYPE_VIDEO;
+    return PHOTO_TYPE_SCREENSHOT;
+}
+
+/// @brief 渲染图像/视频缩略图到canvas
+/// @param obj_id 对应canvas在image_obj中的位置
+static void image_obj_render(int obj_id)
+{
+    char filename_buffer[128];
+    if (image_src_id[obj_id] < 0)
+        return;
+    sprintf(filename_buffer, "/mnt/UDISK/DCIM/CAP%05d.jpeg", image_src_id[obj_id]);
+    lv_obj_t *obj_canvas = lv_obj_get_child(image_obj[obj_id], 0);
+    switch (getPhotoType(image_src_id[obj_id]))
+    {
+    case PHOTO_TYPE_RAW_CAPTURE:
+        canvas_draw_dsc.zoom = 128 * 3;
+        lv_canvas_draw_img(obj_canvas, 0, 0, filename_buffer, &canvas_draw_dsc);
+        break;
+    default:
+        printf("SKIP\n");
+        break;
+    }
+}
+
 static void image_obj_create()
 {
     canvas_draw_dsc.angle = 0;
+    canvas_draw_dsc.antialias = 1;
+    canvas_draw_dsc.blend_mode = LV_BLEND_MODE_NORMAL;
+    canvas_draw_dsc.frame_id = 0;
+    canvas_draw_dsc.opa = LV_OPA_COVER;
+    canvas_draw_dsc.pivot.x = 0;
+    canvas_draw_dsc.pivot.y = 0;
+    canvas_draw_dsc.recolor = lv_color_black();
+    canvas_draw_dsc.recolor_opa = 0;
+    canvas_draw_dsc.zoom = 128 * 3;
     image_pointer_left = image_spare_left;
+    LOCKLV();
+    memset(image_src_id, 0xff, sizeof(image_src_id));
+    for (int i = 3; i >= 0; --i)
+    {
+        if (i == 3)
+            image_src_id[i] = getPrevImage(-1);
+        else if (i >= image_spare_left)
+            image_src_id[i] = getPrevImage(image_src_id[i + 1]);
+        else
+            image_src_id[i] = -1;
+    }
     for (int i = 0; i < 4; ++i)
     {
         image_obj[i] = lv_obj_create(lv_layer_top());
@@ -44,6 +124,10 @@ static void image_obj_create()
         lv_obj_center(canvas_img);
         if (image_spare_left <= i)
             lv_anim_fly_up(image_obj[i], MY_FLY_ANIM_DEFAULT_HEIGHT, MY_FLY_UP_ANIM_DEFAULT_TIME, image_fly_delay_lut[i]);
+        else
+        {
+            image_src_id[i] = -1;
+        }
     }
     image_obj[4] = lv_obj_create(lv_layer_top());
     lv_obj_clear_flag(image_obj[4], LV_OBJ_FLAG_SCROLLABLE);
@@ -54,6 +138,11 @@ static void image_obj_create()
     lv_obj_t *canvas_img = lv_canvas_create(image_obj[4]);
     lv_canvas_set_buffer(canvas_img, canvas_buffer[4], 240, 180, LV_IMG_CF_TRUE_COLOR);
     lv_obj_center(canvas_img);
+    for (int i = 0; i < 5; ++i)
+    {
+        image_obj_render(i);
+    }
+    UNLOCKLV();
 }
 
 static void image_obj_slide_left()
@@ -67,6 +156,13 @@ static void image_obj_slide_left()
     lv_obj_move_foreground(image_obj[spare_obj]);
     lv_anim_del(image_obj[spare_obj], NULL);
     lv_anim_move(image_obj[spare_obj], image_pos_x_lut[3], 0, MY_MOVE_ANIM_DEFAULT_TIME, 0);
+    image_src_id[spare_obj] = getNextImage(image_src_id[(image_pointer_left + 3 - image_spare_left) % 5]);
+    image_obj_render(spare_obj);
+    if (image_src_id[(spare_obj + 4) % 5] > image_src_id[spare_obj])
+        centerImageID = 1;
+    else
+        centerImageID += 1;
+    lv_label_set_text_fmt(lbl_fileid, "%d/%d", centerImageID, totalImages);
 
     for (int i = 1; i < 4 - image_spare_left; ++i)
     {
@@ -88,6 +184,13 @@ static void image_obj_slide_right()
     lv_obj_move_background(image_obj[spare_obj]);
     lv_anim_del(image_obj[spare_obj], NULL);
     lv_obj_fade_in(image_obj[spare_obj], MY_MOVE_ANIM_DEFAULT_TIME, 0);
+    image_src_id[spare_obj] = getPrevImage(image_src_id[image_pointer_left]);
+    image_obj_render(spare_obj);
+    if (image_src_id[(image_pointer_left + (2 - image_spare_left) + 5) % 5] > image_src_id[(image_pointer_left + (3 - image_spare_left) + 5) % 5])
+        centerImageID = totalImages;
+    else
+        centerImageID -= 1;
+    lv_label_set_text_fmt(lbl_fileid, "%d/%d", centerImageID, totalImages);
 
     for (int i = 0; i < 3 - image_spare_left; ++i)
     {
@@ -128,172 +231,70 @@ static void image_obj_close()
     }
     lv_obj_del(image_obj[(image_pointer_left + 4 - image_spare_left) % 5]);
 }
-
-/////////////////////////////////////////////// 图像列表相关
-#include <stdio.h>
-#include <string.h>
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-#include <dirent.h>
-#include <stdint.h>
-#include <sys/types.h>
-#define GALLERY_MAX_IMAGES 100000 // 必须为8的倍数
-static uint8_t image_hashmap[GALLERY_MAX_IMAGES / 8];
-static int totalImages = 0;
-static int centerImageID = 0;       // 当前屏幕中间显示的图像在数组中的位置
-static const uint32_t countTable[256] = {
-    0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4,
-    1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
-    1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
-    2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-    1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
-    2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-    2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-    3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-    1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5,
-    2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-    2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-    3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-    2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6,
-    3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-    3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7,
-    4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8};
-
-int getTotalImages()
+/////////////////////////////////////////////// 相册全屏显示控件
+lv_obj_t *ffmpeg_fullscreen = NULL;
+static void full_screen_show(int id)
 {
-    int total = 0;
-    for (int i = 0; i < sizeof(image_hashmap); ++i)
-    {
-        total += countTable[image_hashmap[i]];
-    }
-    return total;
-}
+    photo_type_t type = getPhotoType(id);
+    char file_name_buffer[128];
 
-int getLastImageID()
-{
-    int i = 0;
-    int j = 0;
-    for (i = sizeof(image_hashmap) - 1; i >= 0; --i)
+    if (type == PHOTO_TYPE_FILE_NOT_FOUND)
     {
-        if (image_hashmap[i] != 0)
-            break;
-    }
-    if (i < 0)
-        return 0;
-    if (image_hashmap[i] == 0xff)
-    {
-        if (i == sizeof(image_hashmap) - 1)
-            return -1;
-        return (i + 1) * 8;
-    }
-    for (j = 7; j >= 0; --j)
-    {
-        if ((1 << j) & image_hashmap[i])
-        {
-            return i * 8 + j + 1;
-        }
-    }
-    return i * 8;
-}
-
-int getNextImage(int current)
-{
-    int result;
-    int i, j;
-    if (current < 0)
-        current = -1;
-    current += 1;
-    i = current / 8;
-    j = current % 8;
-    for (; i < sizeof(image_hashmap); ++i)
-    {
-        for (; j < 8; ++j)
-        {
-            if ((1 << j) & image_hashmap[i])
-            {
-                return i * 8 + j;
-            }
-        }
-        j = 0;
-    }
-    if (current == 0)
-        return -1;
-    else
-        return getNextImage(-1);
-}
-
-int getPrevImage(int current)
-{
-    int result;
-    int i, j;
-    if (current <= 0)
-        current = GALLERY_MAX_IMAGES;
-    current -= 1;
-    i = current / 8;
-    j = current % 8;
-    for (; i >= 0; --i)
-    {
-        for (; j >= 0; --j)
-        {
-            if ((1 << j) & image_hashmap[i])
-            {
-                return i * 8 + j;
-            }
-        }
-        j = 7;
-    }
-    if (current == GALLERY_MAX_IMAGES - 1)
-        return -1;
-    else
-        return getPrevImage(GALLERY_MAX_IMAGES);
-}
-
-void readFiles(const char *dirToOpen)
-{
-    DIR *dir;
-    struct dirent *entry;
-    int id;
-    static char ext[10];
-    if (!(dir = opendir(dirToOpen)))
+        current_state = GALLERY_STATE_LIST;
         return;
-    if (!(entry = readdir(dir)))
-        return;
-    do
+    }
+    if (ffmpeg_fullscreen != NULL)
+        lv_obj_del(ffmpeg_fullscreen);
+    if (type == PHOTO_TYPE_VIDEO)
     {
-        if (entry->d_type != DT_DIR)
-        {
-            // 避免缓冲区溢出
-            int len = strlen(entry->d_name);
-            int ext_pos = strchr(entry->d_name, '.') - entry->d_name;
-            if (ext_pos - len > 6)
-                continue;
-            int param_result = sscanf(entry->d_name, "CAP%d.%s", &id, ext);
-            if (param_result != 2)
-                continue;
-            image_hashmap[id / 8] |= 1 << (id % 8);
-        }
-    } while (entry = readdir(dir));
-    closedir(dir);
-    totalImages = getTotalImages();
+        sprintf(file_name_buffer, GALLERY_PATH "/CAP%05d.mjpeg", id);
+        ffmpeg_fullscreen = lv_ffmpeg_player_create(lv_layer_top());
+        lv_ffmpeg_player_set_src(ffmpeg_fullscreen, file_name_buffer);
+    }
+    else
+    {
+        sprintf(file_name_buffer, GALLERY_PATH "/CAP%05d.jpeg", id);
+        ffmpeg_fullscreen = lv_canvas_create(lv_layer_top());
+        lv_canvas_set_buffer(ffmpeg_fullscreen, canvas_fullscreen_buffer, 320, 240, LV_IMG_CF_TRUE_COLOR);
+        if (type == PHOTO_TYPE_RAW_CAPTURE)
+            canvas_draw_dsc.zoom = 256 * 2;
+        lv_canvas_draw_img(ffmpeg_fullscreen, 0, 0, file_name_buffer, &canvas_draw_dsc);
+    }
+    lv_obj_center(ffmpeg_fullscreen);
+    lv_obj_fade_in(ffmpeg_fullscreen, 500, 0);
+    current_state = GALLERY_STATE_FULLSCREEN;
 }
 
+static void full_screen_hide()
+{
+    if (ffmpeg_fullscreen == NULL)
+        return;
+    lv_obj_fade_out(ffmpeg_fullscreen, 500, 0);
+    lv_obj_del_delayed(ffmpeg_fullscreen, 500);
+    ffmpeg_fullscreen = NULL;
+    current_state = GALLERY_STATE_LIST;
+}
 /////////////////////////////////////////////// 相册功能及相关状态
-typedef enum
-{
-    GALLERY_STATE_LIST,
-    GALLERY_STATE_FULLSCREEN,
-    GALLERY_STATE_MENU,
-} gallery_state_t;
-#define GALLERY_CARD_SHOW_Y -13
-#define GALLERY_CARD_HIDE_Y -43
-gallery_state_t current_state = GALLERY_STATE_LIST;
-MyCard card_gallery;
-lv_obj_t *lbl_fileid = NULL;
 void menu_gallery_show()
 {
     readFiles(GALLERY_PATH);
+    totalImages = getTotalImages();
+    centerImageID = totalImages;
+    if (totalImages == 0)
+    {
+        current_mode = MODE_MAINPAGE;
+        return;
+    }
+    if (totalImages < 4)
+    {
+        image_spare_left = 4 - totalImages;
+    }
+    else
+    {
+        image_spare_left = 0;
+    }
     image_obj_create();
+    LOCKLV();
     card_gallery.create(lv_layer_top(), 0, GALLERY_CARD_HIDE_Y, 120, 33, LV_ALIGN_TOP_MID);
     card_gallery.show(CARD_ANIM_NONE);
     card_gallery.move(0, GALLERY_CARD_SHOW_Y);
@@ -303,6 +304,7 @@ void menu_gallery_show()
     lbl_fileid = lv_label_create(card_gallery.obj);
     lv_obj_set_align(lbl_fileid, LV_ALIGN_TOP_MID);
     lv_label_set_text_fmt(lbl_fileid, "%d/%d", centerImageID, totalImages);
+    UNLOCKLV();
     current_state = GALLERY_STATE_LIST;
     HAL::key_press_event[2] = false; // 菜单按钮事件
     HAL::key_press_event[3] = false; // 全屏切换按钮事件
@@ -321,27 +323,30 @@ void menu_gallery_loop(bool has_hal_go_back_event)
 {
     if (has_hal_go_back_event)
     {
-        LOCKLV();
-        menu_gallery_hide();
-        current_mode = MODE_MAINPAGE;
-        UNLOCKLV();
+        if (current_state == GALLERY_STATE_LIST)
+        {
+            LOCKLV();
+            menu_gallery_hide();
+            current_mode = MODE_MAINPAGE;
+            UNLOCKLV();
+        }
     }
     switch (current_state)
     {
     case GALLERY_STATE_LIST:
         if (last_encoder_direction > 0)
         {
-            last_encoder_direction = 0;
             LOCKLV();
             image_obj_slide_right();
             UNLOCKLV();
+            last_encoder_direction = 0;
         }
         else if (last_encoder_direction < 0)
         {
-            last_encoder_direction = 0;
             LOCKLV();
             image_obj_slide_left();
             UNLOCKLV();
+            last_encoder_direction = 0;
         }
         if (HAL::key_press_event[2])
         {
@@ -351,10 +356,30 @@ void menu_gallery_loop(bool has_hal_go_back_event)
         if (HAL::key_press_event[3])
         {
             HAL::key_press_event[3] = false;
-            printf("Gallery fullscreen requested\n");
+            LOCKLV();
+            full_screen_show(image_src_id[(image_pointer_left + 3) % 5]);
+            UNLOCKLV();
         }
         break;
-
+    case GALLERY_STATE_FULLSCREEN:
+        if (last_encoder_direction > 0)
+        {
+            // TODO: FastForward
+            last_encoder_direction = 0;
+        }
+        else if (last_encoder_direction < 0)
+        {
+            // TODO: Rewind
+            last_encoder_direction = 0;
+        }
+        HAL::key_press_event[2] = false;
+        if (HAL::key_press_event[3])
+        {
+            HAL::key_press_event[3] = false;
+            LOCKLV();
+            full_screen_hide();
+            UNLOCKLV();
+        }
     default:
         break;
     }

@@ -220,7 +220,7 @@ float CameraUtils::readJpegWithExtra(const char *save_filename, int result_x, in
         }
         if (save_filename != NULL)
         {
-            std::ofstream file(std::string(save_filename) + ".jpg");
+            std::ofstream file(std::string(save_filename) + ".jpeg");
             if (file.is_open())
             {
                 file << parts[1];

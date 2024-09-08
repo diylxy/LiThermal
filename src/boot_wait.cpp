@@ -25,7 +25,7 @@ void waitboot_scr_load(lv_obj_t *parent)
     lv_obj_set_height(ui_Image1, LV_SIZE_CONTENT); /// 1
     lv_obj_set_align(ui_Image1, LV_ALIGN_CENTER);
     lv_obj_fade_out(ui_Image1, 500, 0);
-    lv_obj_del_delayed(ui_Image1, 540);
+    lv_obj_del_delayed(ui_Image1, 500);
     if (cameraUtils.checkCameraConnection() == true)
     {
         cameraUtils.setCameraIP();
