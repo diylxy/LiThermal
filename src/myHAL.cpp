@@ -159,6 +159,7 @@ void *thread_hal_func(void *)
             if (HAL::key_press_event[2])
             {
                 // 开始/停止录像
+                camera_record_toggle_dump_stream();
                 HAL::key_press_event[2] = false;
             }
             if (HAL::key_press_event[3])

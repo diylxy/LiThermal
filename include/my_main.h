@@ -21,6 +21,7 @@
 #include "myHAL.h"
 extern bool global_poweroff_request;       // main.cpp
 #include "videoPlayer.h"
+#include "videoCodec.h"
 #include "animations.h"
 #include "cameraUtils.h"
 #include "utils/filenameAllocator.h"

@@ -192,6 +192,7 @@ lv_res_t lv_ffmpeg_player_set_src(lv_obj_t * obj, const char * path)
     lv_img_set_src(&player->img.obj, &(player->imgdsc));
 
     int period = ffmpeg_get_frame_refr_period(player->ffmpeg_ctx);
+    period = 40;
 
     if(period > 0) {
         LV_LOG_INFO("frame refresh period = %d ms, rate = %d fps",

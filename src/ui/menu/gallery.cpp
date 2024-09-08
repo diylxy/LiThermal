@@ -78,6 +78,7 @@ static void image_obj_render(int obj_id)
     switch (getPhotoType(image_src_id[obj_id]))
     {
     case PHOTO_TYPE_RAW_CAPTURE:
+    case PHOTO_TYPE_VIDEO:
         canvas_draw_dsc.zoom = 128 * 3;
         lv_canvas_draw_img(obj_canvas, 0, 0, filename_buffer, &canvas_draw_dsc);
         break;
@@ -250,6 +251,9 @@ static void full_screen_show(int id)
         sprintf(file_name_buffer, GALLERY_PATH "/CAP%05d.mjpeg", id);
         ffmpeg_fullscreen = lv_ffmpeg_player_create(lv_layer_top());
         lv_ffmpeg_player_set_src(ffmpeg_fullscreen, file_name_buffer);
+        lv_ffmpeg_player_set_cmd(ffmpeg_fullscreen, LV_FFMPEG_PLAYER_CMD_START);
+        lv_ffmpeg_player_set_auto_restart(ffmpeg_fullscreen, true);
+        lv_obj_fade_in(ffmpeg_fullscreen, 500, 750);
     }
     else
     {
@@ -259,9 +263,9 @@ static void full_screen_show(int id)
         if (type == PHOTO_TYPE_RAW_CAPTURE)
             canvas_draw_dsc.zoom = 256 * 2;
         lv_canvas_draw_img(ffmpeg_fullscreen, 0, 0, file_name_buffer, &canvas_draw_dsc);
+        lv_obj_fade_in(ffmpeg_fullscreen, 500, 0);
     }
     lv_obj_center(ffmpeg_fullscreen);
-    lv_obj_fade_in(ffmpeg_fullscreen, 500, 0);
     current_state = GALLERY_STATE_FULLSCREEN;
 }
 
