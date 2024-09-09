@@ -157,3 +157,10 @@ const char *allocateNewFilename()
     printf("Allocated filename: %s\n", newFilename);
     return newFilename;
 }
+
+void freeFileName(int id)
+{
+    if (id >= GALLERY_MAX_IMAGES || id < 0)
+        return ;
+    image_hashmap[id / 8] &= ~(1 << (id % 8));
+}

@@ -152,8 +152,18 @@ static void image_obj_slide_left()
     if (image_spare_left >= 3)
         return;
     // 处理空闲的obj
-    lv_obj_set_pos(image_obj[spare_obj], GALLERY_POS_RIGHT_X, 0);
+    for (int i = 0; i < 5; ++i)
+    {
+        if (lv_obj_get_child_cnt(image_obj[i]) == 2)
+        {
+            lv_obj_t *btn = lv_obj_get_child(image_obj[i], -1);
+            lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_del_delayed(btn, 500);
+        }
+    }
     lv_obj_set_style_opa(image_obj[spare_obj], LV_OPA_COVER, 0);
+    lv_obj_set_style_transform_angle(image_obj[spare_obj], 0, 0);
+    lv_obj_set_pos(image_obj[spare_obj], GALLERY_POS_RIGHT_X, 0);
     lv_obj_move_foreground(image_obj[spare_obj]);
     lv_anim_del(image_obj[spare_obj], NULL);
     lv_anim_move(image_obj[spare_obj], image_pos_x_lut[3], 0, MY_MOVE_ANIM_DEFAULT_TIME, 0);
@@ -180,7 +190,17 @@ static void image_obj_slide_right()
     if (image_spare_left >= 3)
         return;
     // 处理空闲的obj
+    for (int i = 0; i < 5; ++i)
+    {
+        if (lv_obj_get_child_cnt(image_obj[i]) == 2)
+        {
+            lv_obj_t *btn = lv_obj_get_child(image_obj[i], -1);
+            lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_del_delayed(btn, 500);
+        }
+    }
     lv_obj_set_style_opa(image_obj[spare_obj], 0, 0);
+    lv_obj_set_style_transform_angle(image_obj[spare_obj], 0, 0);
     lv_obj_set_pos(image_obj[spare_obj], image_pos_x_lut[image_spare_left], image_pos_y_lut[image_spare_left]);
     lv_obj_move_background(image_obj[spare_obj]);
     lv_anim_del(image_obj[spare_obj], NULL);
@@ -200,27 +220,73 @@ static void image_obj_slide_right()
     lv_anim_move(image_obj[(image_pointer_left + 3 - image_spare_left) % 5], GALLERY_POS_RIGHT_X, 0, MY_MOVE_ANIM_DEFAULT_TIME, 0);
     image_pointer_left = spare_obj;
 }
-
+static void menu_gallery_hide();
 // 相当于右滑，但当前显示的照片动画不同
 static void image_obj_del_current()
 {
-    int spare_obj = (image_pointer_left + 4) % 5;
-    if (image_spare_left >= 3)
+    if (image_spare_left > 3)
         return;
+    // 删除对应图像
+    {
+        // TODO: 处理最后一张图像的情况
+        // TODO: 图像个数减少时动画显示错误
+        int img_id_to_remove = image_src_id[(image_pointer_left + 3 - image_spare_left) % 5];
+        totalImages -= 1;
+        centerImageID -= 1;
+        if (centerImageID == 0)
+        {
+            centerImageID = totalImages;
+        }
+        freeFileName(img_id_to_remove);
+        char command_buffer[128];
+        sprintf(command_buffer, "rm " GALLERY_PATH "/CAP%05d.*", img_id_to_remove);
+        system(command_buffer);
+        if (totalImages == 0)
+        {
+            current_mode = MODE_MAINPAGE;
+            menu_gallery_hide();
+            return;
+        }
+    }
+    int spare_obj = (image_pointer_left + 4) % 5;
     // 处理空闲的obj
-    lv_obj_set_style_opa(image_obj[spare_obj], 0, 0);
-    lv_obj_set_pos(image_obj[spare_obj], image_pos_x_lut[image_spare_left], image_pos_y_lut[image_spare_left]);
-    lv_obj_move_background(image_obj[spare_obj]);
-    lv_anim_del(image_obj[spare_obj], NULL);
-    lv_obj_fade_in(image_obj[spare_obj], MY_MOVE_ANIM_DEFAULT_TIME, 0);
+    for (int i = 0; i < 5; ++i)
+    {
+        if (lv_obj_get_child_cnt(image_obj[i]) == 2)
+        {
+            lv_obj_t *btn = lv_obj_get_child(image_obj[i], -1);
+            lv_obj_clear_flag(btn, LV_OBJ_FLAG_CLICKABLE);
+            lv_obj_del_delayed(btn, 500);
+        }
+    }
+    if (totalImages >= 4)
+    {
+        lv_obj_set_style_opa(image_obj[spare_obj], 0, 0);
+        lv_obj_set_style_transform_angle(image_obj[spare_obj], 0, 0);
+        lv_obj_set_pos(image_obj[spare_obj], image_pos_x_lut[image_spare_left], image_pos_y_lut[image_spare_left]);
+        lv_obj_move_background(image_obj[spare_obj]);
+        lv_anim_del(image_obj[spare_obj], NULL);
+        lv_obj_fade_in(image_obj[spare_obj], MY_MOVE_ANIM_DEFAULT_TIME, 0);
+        image_src_id[spare_obj] = getPrevImage(image_src_id[image_pointer_left]);
+        image_obj_render(spare_obj);
+    }
+    lv_label_set_text_fmt(lbl_fileid, "%d/%d", centerImageID, totalImages);
 
     for (int i = 0; i < 3 - image_spare_left; ++i)
     {
-        lv_anim_move(image_obj[(image_pointer_left + i) % 5], image_pos_x_lut[i + 1 + image_spare_left], 0, MY_MOVE_ANIM_DEFAULT_TIME, image_fly_delay_lut[i + image_spare_left]);
+        lv_anim_move(image_obj[(image_pointer_left + i) % 5], image_pos_x_lut[i + 1 + image_spare_left], image_pos_y_lut[i + 1 + image_spare_left], MY_MOVE_ANIM_DEFAULT_TIME, image_fly_delay_lut[i + image_spare_left]);
     }
     lv_anim_del(image_obj[(image_pointer_left + 3 - image_spare_left) % 5], NULL);
     lv_my_anim_fall_down(image_obj[(image_pointer_left + 3 - image_spare_left) % 5], MY_POP_FALL_ANIM_DEFAULT_TIME, 0, false);
-    image_pointer_left = spare_obj;
+    if (totalImages < 4)
+    {
+        image_spare_left = 4 - totalImages;
+    }
+    else
+    {
+        image_spare_left = 0;
+        image_pointer_left = spare_obj;
+    }
 }
 
 static void image_obj_close()
@@ -237,6 +303,8 @@ lv_obj_t *ffmpeg_fullscreen = NULL;
 static void full_screen_show(int id)
 {
     photo_type_t type = getPhotoType(id);
+    printf("ID: %d\n", id);
+    printf("Type: %d\n", type);
     char file_name_buffer[128];
 
     if (type == PHOTO_TYPE_FILE_NOT_FOUND)
@@ -277,6 +345,36 @@ static void full_screen_hide()
     lv_obj_del_delayed(ffmpeg_fullscreen, 500);
     ffmpeg_fullscreen = NULL;
     current_state = GALLERY_STATE_LIST;
+}
+
+/////////////////////////////////////////////// 照片删除
+
+void createDeleteButton(lv_obj_t *parent)
+{
+    lv_obj_t *button = lv_btn_create(parent);
+    lv_obj_set_size(button, 70, 40);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xf44336), 0);
+    lv_obj_t *label = lv_label_create(button);
+    lv_obj_set_style_text_font(label, &ui_font_ali24, 0);
+    lv_label_set_text(label, "删除");
+    lv_obj_set_align(label, LV_ALIGN_RIGHT_MID);
+    lv_obj_fade_in(button, 300, 0);
+    lv_obj_set_user_data(button, NULL);
+    lv_obj_add_event_cb(button, [](lv_event_t *e)
+                        {
+        if (e->target->user_data == NULL)
+        {
+            lv_label_set_text(lv_obj_get_child(e->target, 0), "确认删除");
+            lv_anim_size(e->target, 120, 40);
+            e->target->user_data = (void*)0x00000004;
+        }
+        else if (e->target->user_data == (void*)0x00000004)
+        {
+            image_obj_del_current();
+            e->target->user_data = (void*)0x00000008;
+            current_state = GALLERY_STATE_LIST;
+        } }, LV_EVENT_CLICKED, NULL);
 }
 /////////////////////////////////////////////// 相册功能及相关状态
 void menu_gallery_show()
@@ -334,6 +432,12 @@ void menu_gallery_loop(bool has_hal_go_back_event)
             current_mode = MODE_MAINPAGE;
             UNLOCKLV();
         }
+        else if (current_state == GALLERY_STATE_FULLSCREEN)
+        {
+            LOCKLV();
+            full_screen_hide();
+            UNLOCKLV();
+        }
     }
     switch (current_state)
     {
@@ -355,13 +459,28 @@ void menu_gallery_loop(bool has_hal_go_back_event)
         if (HAL::key_press_event[2])
         {
             HAL::key_press_event[2] = false;
-            printf("Gallery menu requested\n");
+            // printf("Gallery menu requested\n");
+            LOCKLV();
+            for (int i = 0; i < 5; ++i)
+            {
+                if (i != ((image_pointer_left + 3 - image_spare_left) % 5))
+                {
+                    if (lv_obj_get_child_cnt(image_obj[i]) >= 2)
+                    {
+                        lv_obj_t *btn = lv_obj_get_child(image_obj[i], -1);
+                        lv_obj_del(btn);
+                    }
+                }
+            }
+            createDeleteButton(image_obj[(image_pointer_left + 3 - image_spare_left) % 5]);
+            UNLOCKLV();
+            current_state = GALLERY_STATE_MENU;
         }
         if (HAL::key_press_event[3])
         {
             HAL::key_press_event[3] = false;
             LOCKLV();
-            full_screen_show(image_src_id[(image_pointer_left + 3) % 5]);
+            full_screen_show(image_src_id[(image_pointer_left + 3 - image_spare_left) % 5]);
             UNLOCKLV();
         }
         break;
@@ -384,6 +503,40 @@ void menu_gallery_loop(bool has_hal_go_back_event)
             full_screen_hide();
             UNLOCKLV();
         }
+    case GALLERY_STATE_MENU:
+        if (last_encoder_direction > 0)
+        {
+            LOCKLV();
+            image_obj_slide_right();
+            UNLOCKLV();
+            last_encoder_direction = 0;
+            current_state = GALLERY_STATE_LIST;
+        }
+        else if (last_encoder_direction < 0)
+        {
+            LOCKLV();
+            image_obj_slide_left();
+            UNLOCKLV();
+            last_encoder_direction = 0;
+            current_state = GALLERY_STATE_LIST;
+        }
+        if (HAL::key_press_event[2] || has_hal_go_back_event)
+        {
+            HAL::key_press_event[2] = false;
+            LOCKLV();
+            for (int i = 0; i < 5; ++i)
+            {
+                if (lv_obj_get_child_cnt(image_obj[i]) >= 2)
+                {
+                    lv_obj_t *btn = lv_obj_get_child(image_obj[i], -1);
+                    lv_obj_del(btn);
+                }
+            }
+            UNLOCKLV();
+            current_state = GALLERY_STATE_LIST;
+        }
+        HAL::key_press_event[3] = false;
+        break;
     default:
         break;
     }

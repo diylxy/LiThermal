@@ -11,3 +11,5 @@ int getPrevImage(int current);
 void readFiles(const char *dirToOpen);
 
 const char *allocateNewFilename();
+
+void freeFileName(int id);

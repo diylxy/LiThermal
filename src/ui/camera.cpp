@@ -21,6 +21,7 @@ void camera_take_photo_from_stream()
 extern bool packet_dumping;
 lv_timer_t *tm_create_circle = NULL, *tm_circle = NULL;
 lv_obj_t* circle_REC = NULL;
+lv_obj_t *lot_rec = NULL;
 void camera_record_toggle_dump_stream()
 {
     if (packet_dumping == true)
@@ -42,6 +43,11 @@ void camera_record_toggle_dump_stream()
             lv_obj_del(circle_REC);
             circle_REC = NULL;
         }
+        if (lot_rec)
+        {
+            lv_obj_del(lot_rec);
+            lot_rec = NULL;
+        }
         UNLOCKLV();
         codec_enablePacketDumping(false, NULL);
     }
@@ -59,7 +65,7 @@ void camera_record_toggle_dump_stream()
         codec_enablePacketDumping(true, file_name_buffer);
         sprintf(file_name_buffer, "%s.raw", name_partial);
         remove(file_name_buffer); // 避免识别成照片
-        lv_obj_t *lot_rec = lv_rlottie_create_from_raw(lv_layer_top(), 200, 200, lottie_rec);
+        lot_rec = lv_rlottie_create_from_raw(lv_layer_top(), 200, 200, lottie_rec);
         lv_obj_center(lot_rec);
         lv_rlottie_set_play_mode(lot_rec, LV_RLOTTIE_CTRL_PLAY);
         lv_obj_del_delayed(lot_rec, 5000);

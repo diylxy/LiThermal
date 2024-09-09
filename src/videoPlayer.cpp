@@ -55,7 +55,7 @@ void *thread_refresh_image(void *)
 {
     static int err_count = 0;
     sem_wait(&sem_video);
-    usleep(530 * 1000);
+    usleep(500 * 1000);
     while (1)
     {
         switch (thread_video_command)

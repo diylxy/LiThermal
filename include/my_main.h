@@ -34,6 +34,7 @@ extern pthread_mutex_t lv_mutex;
 #ifdef __cplusplus
 extern "C" {
 #endif
+extern const lv_font_t ui_font_ali24;
 extern const lv_font_t ui_font_chinese16;
 extern const lv_font_t ui_font_fontawesome16;
 extern const lv_font_t ui_font_fontawesome24;
