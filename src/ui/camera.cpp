@@ -14,16 +14,20 @@ static void flash_bang_effect()
 }
 void camera_take_photo_from_stream()
 {
+    if (cameraUtils.connected == false)
+        return;
     flash_bang_effect();
     cameraUtils.readJpegWithExtra(allocateNewFilename());
 }
 #include "lottie_rec.h"
 extern bool packet_dumping;
 lv_timer_t *tm_create_circle = NULL, *tm_circle = NULL;
-lv_obj_t* circle_REC = NULL;
+lv_obj_t *circle_REC = NULL;
 lv_obj_t *lot_rec = NULL;
 void camera_record_toggle_dump_stream()
 {
+    if (cameraUtils.connected == false)
+        return;
     if (packet_dumping == true)
     {
         flash_bang_effect();
@@ -43,7 +47,7 @@ void camera_record_toggle_dump_stream()
             lv_obj_del(circle_REC);
             circle_REC = NULL;
         }
-        if (lot_rec)
+        if (lv_obj_is_valid(lot_rec))
         {
             lv_obj_del(lot_rec);
             lot_rec = NULL;
@@ -70,7 +74,8 @@ void camera_record_toggle_dump_stream()
         lv_rlottie_set_play_mode(lot_rec, LV_RLOTTIE_CTRL_PLAY);
         lv_obj_del_delayed(lot_rec, 5000);
 
-        tm_create_circle = lv_timer_create([](lv_timer_t *tm_out){
+        tm_create_circle = lv_timer_create([](lv_timer_t *tm_out)
+                                           {
             circle_REC = lv_obj_create(lv_layer_top());
             lv_obj_set_size(circle_REC, 8, 8);
             lv_obj_align(circle_REC, LV_ALIGN_TOP_RIGHT, -8, 8);
@@ -82,6 +87,7 @@ void camera_record_toggle_dump_stream()
                 if (lv_obj_is_valid(circle_REC) == false)
                 {
                     lv_timer_del(tm);
+                    circle_REC = NULL;
                     return;
                 }
                 if (lv_obj_get_style_opa(circle_REC, 0) <= 5)
@@ -94,7 +100,6 @@ void camera_record_toggle_dump_stream()
                 }
                 }, 700, NULL);
             lv_timer_del(tm_create_circle);
-            tm_create_circle = NULL;
-        }, 3000, 0);
+            tm_create_circle = NULL; }, 3000, 0);
     }
 }

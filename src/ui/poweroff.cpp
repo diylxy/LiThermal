@@ -3,6 +3,7 @@
 static void doPoweroff()
 {
     printf("Poweroff!\n");
+    settings_save();
     global_poweroff_request = true;// 此处通知HAL线程关机，然后返回，在此注册背光渐暗动画。主线程等待动画完全结束（500ms 左右）再启动关机流程
 }
 bool poweroff_started = true;

@@ -34,10 +34,8 @@ void CameraUtils::initHTTPClient()
     cli.set_basic_auth("admin", "Ab123456");
 }
 #include <cJSON.h>
-void CameraUtils::getTemperature(temperature_point_t *result)
+void CameraUtils::getTemperature()
 {
-    if (result == NULL)
-        return;
     auto res = cli.Get("/ISAPI/Thermal/channels/1/thermometry/1/rulesTemperatureInfo?format=json");
     if (res && res->status == 200)
     {
@@ -75,14 +73,14 @@ void CameraUtils::getTemperature(temperature_point_t *result)
         cJSON *positionY = cJSON_GetObjectItem(MaxTemperaturePoint, "positionY");
         cJSON *positionX2 = cJSON_GetObjectItem(MinTemperaturePoint, "positionX");
         cJSON *positionY2 = cJSON_GetObjectItem(MinTemperaturePoint, "positionY");
-        result->maxTemperature = maxTemperature->valuedouble;
-        result->minTemperature = minTemperature->valuedouble;
-        result->averageTemperature = averageTemperature->valuedouble;
-        result->MaxTemperaturePoint.positionX = positionX->valuedouble;
-        result->MaxTemperaturePoint.positionY = positionY->valuedouble;
-        result->MinTemperaturePoint.positionX = positionX2->valuedouble;
-        result->MinTemperaturePoint.positionY = positionY2->valuedouble;
-        result->isFreezedata = cJSON_GetObjectItem(pack, "isFreezedata")->valueint;
+        lastResult.maxTemperature = maxTemperature->valuedouble;
+        lastResult.minTemperature = minTemperature->valuedouble;
+        lastResult.averageTemperature = averageTemperature->valuedouble;
+        lastResult.MaxTemperaturePoint.positionX = positionX->valuedouble;
+        lastResult.MaxTemperaturePoint.positionY = positionY->valuedouble;
+        lastResult.MinTemperaturePoint.positionX = positionX2->valuedouble;
+        lastResult.MinTemperaturePoint.positionY = positionY2->valuedouble;
+        lastResult.isFreezedata = cJSON_GetObjectItem(pack, "isFreezedata")->valueint;
         cJSON_Delete(root);
     }
     else
@@ -204,7 +202,6 @@ static std::vector<std::string> split_multipart(const std::string &body, const s
 float CameraUtils::readJpegWithExtra(const char *save_filename, int result_x, int result_y)
 {
     auto res = cli.Get("/ISAPI/Thermal/channels/1/thermometry/jpegPicWithAppendData?format=json");
-    float res_temperature;
     if (res && res->status == 200)
     {
         // Parse the response headers to get the boundary string
@@ -233,8 +230,24 @@ float CameraUtils::readJpegWithExtra(const char *save_filename, int result_x, in
                 file2.close();
             }
         }
-        res_temperature = *(float *)((uint8_t *)parts[2].c_str() + ((result_x + result_y * 160) * 4));
-        return res_temperature;
+        lastCenterTemperature = *(float *)((uint8_t *)parts[2].c_str() + ((result_x + result_y * 160) * 4));
+        return lastCenterTemperature;
     }
     return 0.0f;
+}
+
+void CameraUtils::setCenterMeasure(bool en)
+{
+    auto res = cli.Get("/ISAPI/Thermal/channels/1/temperatureCorrect?format=json");
+    char data[1024];
+    if (res && res->status == 200)
+    {
+        cJSON *root = cJSON_Parse(res->body.c_str());
+        cJSON *TemperatureCorrect = cJSON_GetObjectItem(root, "TemperatureCorrect");
+        cJSON *streamOverlay = cJSON_GetObjectItem(TemperatureCorrect, "streamOverlay");
+        cJSON_SetBoolValue(streamOverlay, en);
+        cJSON_PrintPreallocated(root, data, 1024, cJSON_False);
+        cJSON_Delete(root);
+        cli.Put("/ISAPI/Thermal/channels/1/temperatureCorrect?format=json", data, "application/json");
+    }
 }

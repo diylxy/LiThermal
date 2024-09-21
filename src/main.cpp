@@ -2,24 +2,33 @@
 pthread_mutex_t lv_mutex;
 
 // lv_obj_t *test_anim_obj;
-/// @brief UI线程
+/// @brief 热成像刷新线程
 pthread_t thread_app;
 void *thread_app_func(void *)
 {
-    temperature_point_t temperature_point;
+    static uint32_t last_color_palette = -1;
+    static uint32_t last_show_center = -1;
+    static int centerRefreshCounter = 0;
     while (cameraUtils.connected == false)
         usleep(100000);
     sleep(1);
-    cameraUtils.setColorPalette(IR_COLOR_PALETTE_DEFAULT);
+    LOCKLV();
+    widget_graph_updateSettings();
+    UNLOCKLV();
     while (1)
     {
-        /*
-        cameraUtils.getTemperature(&temperature_point);
-        LOCKLV();
-        lv_obj_set_pos(test_anim_obj, temperature_point.MaxTemperaturePoint.positionX * 320 - 1, temperature_point.MaxTemperaturePoint.positionY * 240 - 1);
-        UNLOCKLV();
-        */
-        usleep(25000);
+        if (last_color_palette != globalSettings.colorPalette)
+        {
+            last_color_palette = globalSettings.colorPalette;
+            cameraUtils.setColorPalette(globalSettings.colorPalette);
+        }
+        if (last_show_center != globalSettings.enableCenterValueDisplay)
+        {
+            last_show_center = globalSettings.enableCenterValueDisplay;
+            cameraUtils.setCenterMeasure(last_show_center);
+        }
+        cameraUtils.getTemperature();
+        usleep(40000);
     }
     return NULL;
 }
@@ -46,6 +55,7 @@ int main()
     // lv_obj_set_size(test_anim_obj, 3, 3);
     printf("Loop begin\n");
     waitboot_scr_load(lv_scr_act());
+    widget_graph_create();
     pthread_create(&thread_ui, NULL, thread_ui_func, NULL);
     cameraUtils.initHTTPClient();
     pthread_create(&thread_app, NULL, thread_app_func, NULL);

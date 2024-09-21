@@ -86,7 +86,6 @@ void lv_fs_stdio_init(void)
     fs_drv.dir_close_cb = fs_dir_close;
     fs_drv.dir_open_cb = fs_dir_open;
     fs_drv.dir_read_cb = fs_dir_read;
-    printf("[DEBUG] REG\n");
 
     lv_fs_drv_register(&fs_drv);
 }

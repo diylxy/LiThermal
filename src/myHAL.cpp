@@ -32,10 +32,9 @@ static pthread_t thread_hal;
 // Ctrl+C退出
 void signal_exit(int signo)
 {
-#ifdef CMAKE_CROSSCOMPILING
     sunxifb_exit();
     printf("exit\n");
-#endif
+    settings_save();
     videoPlayer.disconnect();
     sleep(1);
     exit(0);
@@ -191,6 +190,7 @@ void HAL::init()
     // 硬件初始化
     PowerManager_init();
     // 软件初始化
+    settings_load(); // 读取全局设置项
     lv_init();
     printf("Hello World\n");
     /*Initialize and register a display driver*/

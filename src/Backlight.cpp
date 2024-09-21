@@ -16,7 +16,6 @@ static int backlight_fd = 0;
 static unsigned long args[4];
 
 int current_backlight = 170;
-int target_backlight = 170;
 static const uint8_t gamma_lut[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
     1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4,
@@ -76,12 +75,12 @@ void *thread_backlight_func(void *param)
     UNLOCKLV();
     while (1)
     {
-        if (current_backlight > target_backlight)
+        if (current_backlight > globalSettings.brightness)
         {
             current_backlight -= 1;
             Backlight_setCurrent_internal(current_backlight);
         }
-        else if (current_backlight < target_backlight)
+        else if (current_backlight < globalSettings.brightness)
         {
             current_backlight += 1;
             Backlight_setCurrent_internal(current_backlight);
@@ -95,24 +94,24 @@ void Backlight_set(int new_backlight)
 {
     if (new_backlight > 255)
         new_backlight = 255;
-    target_backlight = new_backlight;
+    globalSettings.brightness = new_backlight;
 }
 
 void Backlight_step(int direction)
 {
     if (direction > 0)
     {
-        if (target_backlight <= (255 - 8))
-            target_backlight += 8;
+        if (globalSettings.brightness <= (255 - 8))
+            globalSettings.brightness += 8;
         else
-            target_backlight = 255;
+            globalSettings.brightness = 255;
     }
     else
     {
-        if (target_backlight >= 8)
-            target_backlight -= 8;
+        if (globalSettings.brightness >= 8)
+            globalSettings.brightness -= 8;
         else
-            target_backlight = 0;
+            globalSettings.brightness = 0;
     }
 }
 
@@ -124,8 +123,7 @@ void Backlight_init()
         printf("open /dev/disp failed.\n");
         return;
     }
-    target_backlight = Backlight_getCurrent_internal();
-    current_backlight = target_backlight;
+    current_backlight = Backlight_getCurrent_internal();
     pthread_create(&thread_backlight, NULL, thread_backlight_func, NULL);
     printf("brightness init finished\n");
 }

@@ -40,15 +40,18 @@ typedef struct temperature_point_t
 class CameraUtils
 {
 public:
+    temperature_point_t lastResult;
+    float lastCenterTemperature;
     bool connected = false;
     bool checkCameraConnection(); // 检查摄像头连接
     void setCameraIP();           // 设置摄像头固定IP
     void initHTTPClient();        // 初始化HTTP客户端（即设置HTTP认证）
-    void getTemperature(temperature_point_t *result);        // 获取摄像头温度信息
+    void getTemperature();        // 获取摄像头温度信息
     void setColorPalette(int palette);
     void setDigitalNoiceReduce(int mode, int frameLevel, int interFrameLevel);
     void setDigitalDetailEnhancement(bool en, int level);
     float readJpegWithExtra(const char *save_filename = NULL, int result_x = 160 / 2, int result_y = 120 / 2);
+    void setCenterMeasure(bool en);
 };
 
 extern CameraUtils cameraUtils;
