@@ -64,3 +64,8 @@ void menu_gallery_loop(bool has_hal_go_back_event);
 // 图表功能
 void widget_graph_create();
 void widget_graph_updateSettings();
+void widget_graph_check_visibility();
+
+void ui_crosshairs_create();
+void ui_crosshairs_updatePos();
+void ui_crosshairs_updateVisibility();

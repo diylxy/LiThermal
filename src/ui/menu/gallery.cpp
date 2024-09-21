@@ -337,7 +337,7 @@ static void full_screen_show(int id)
         ffmpeg_fullscreen = lv_canvas_create(lv_layer_top());
         lv_canvas_set_buffer(ffmpeg_fullscreen, canvas_fullscreen_buffer, 320, 240, LV_IMG_CF_TRUE_COLOR);
         if (type == PHOTO_TYPE_RAW_CAPTURE)
-            canvas_draw_dsc.zoom = 256 * 2;
+            canvas_draw_dsc.zoom = 256 * 2 + 2;
         else
             canvas_draw_dsc.zoom = 256;
         lv_canvas_draw_img(ffmpeg_fullscreen, 0, 0, file_name_buffer, &canvas_draw_dsc);

@@ -205,7 +205,6 @@ MyCard card;
 
 #define GRAPH_SIZE_SMALL false
 #define GRAPH_SIZE_LAEGE true
-static int current_pos = 0;
 static bool is_showed = false;
 static int graph_hide_pos[4][2] = {
     {-260, 10},
@@ -238,17 +237,17 @@ static void setGraphPosition(int new_pos)
     card.move(x, y);
 }
 
-static void hideGraph()
+static void hideGraph(int delay = 0)
 {
-    card.move(graph_hide_pos[current_pos][0], graph_hide_pos[current_pos][1]);
-    lv_obj_fade_out(card.obj, 500, 0);
+    lv_anim_move(card.obj, graph_hide_pos[globalSettings.graphPos][0], graph_hide_pos[globalSettings.graphPos][1], MY_MOVE_ANIM_DEFAULT_TIME, delay);
+    lv_obj_fade_out(card.obj, 500, delay);
     is_showed = false;
 }
 
 static void showGraph()
 {
-    card.move(graph_hide_pos[current_pos][0], graph_hide_pos[current_pos][1], false);
-    setGraphPosition(current_pos);
+    card.move(graph_hide_pos[globalSettings.graphPos][0], graph_hide_pos[globalSettings.graphPos][1], false);
+    setGraphPosition(globalSettings.graphPos);
     lv_obj_fade_in(card.obj, 500, 0);
     is_showed = true;
 }
@@ -289,6 +288,7 @@ const int graph_data_interval_table[7] = {
     5000,
     10000,
 };
+
 void widget_graph_updateSettings()
 {
     resizeGraph(globalSettings.graphSize);
@@ -309,12 +309,27 @@ void widget_graph_create()
 {
     card.create(lv_scr_act(), 10, 10, CARD_SIZE_SMALL_WIDTH, CARD_SIZE_HEIGHT);
     lv_obj_set_style_pad_all(card.obj, 0, 0);
-    lv_obj_set_style_bg_opa(card.obj, 128, 0);
+    lv_obj_set_style_bg_opa(card.obj, 192, 0);
     lv_obj_clear_flag(card.obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_clip_corner(card.obj, true, 0);
     chart.init(card.obj, CARD_SIZE_LARGE_WIDTH, CARD_SIZE_HEIGHT, graph_data_interval_table[globalSettings.graphRefreshInterval], 0, getGraphData, graph_data_interval_table[globalSettings.graphRefreshInterval]);
     lv_obj_set_size(chart._chart_widget, CARD_SIZE_SMALL_WIDTH, CARD_SIZE_HEIGHT);
-    card.move(graph_hide_pos[current_pos][0], graph_hide_pos[current_pos][1], false);
+    card.move(graph_hide_pos[globalSettings.graphPos][0], graph_hide_pos[globalSettings.graphPos][1], false);
     card.show(CARD_ANIM_NONE);
     chart.label_factor = 0.01;
+}
+
+static bool hidden_by_view = false;
+void widget_graph_check_visibility()
+{
+    if (hidden_by_view == true && current_mode != MODE_GALLERY)
+    {
+        widget_graph_updateSettings();
+        hidden_by_view = false;
+    }
+    if (hidden_by_view == false && current_mode == MODE_GALLERY)
+    {
+        hideGraph(200);
+        hidden_by_view = true;
+    }
 }

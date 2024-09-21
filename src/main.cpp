@@ -14,6 +14,8 @@ void *thread_app_func(void *)
     sleep(1);
     LOCKLV();
     widget_graph_updateSettings();
+    ui_crosshairs_updateVisibility();
+    widget_graph_check_visibility();
     UNLOCKLV();
     while (1)
     {
@@ -28,6 +30,10 @@ void *thread_app_func(void *)
             cameraUtils.setCenterMeasure(last_show_center);
         }
         cameraUtils.getTemperature();
+        LOCKLV();
+        ui_crosshairs_updatePos();
+        widget_graph_check_visibility();
+        UNLOCKLV();
         usleep(40000);
     }
     return NULL;
@@ -56,6 +62,7 @@ int main()
     printf("Loop begin\n");
     waitboot_scr_load(lv_scr_act());
     widget_graph_create();
+    ui_crosshairs_create();
     pthread_create(&thread_ui, NULL, thread_ui_func, NULL);
     cameraUtils.initHTTPClient();
     pthread_create(&thread_app, NULL, thread_app_func, NULL);

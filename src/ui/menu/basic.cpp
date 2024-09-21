@@ -87,28 +87,28 @@ static void card_settings_disp(lv_obj_t *ui_Panel1)
     lv_obj_set_y(ui_Label3, 72);
     lv_obj_set_align(ui_Label3, LV_ALIGN_TOP_MID);
     lv_label_set_text(ui_Label3, "位置");
-    lv_obj_set_style_bg_opa(ui_Panel1, 160, 0);
+    lv_obj_set_style_bg_opa(ui_Panel1, 192, 0);
     lv_obj_set_style_border_width(ui_Panel1, 0, 0);
-    lv_obj_set_style_bg_opa(ui_Checkbox1, 128, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_opa(ui_Checkbox2, 128, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_opa(ui_Checkbox3, 128, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_opa(ui_Checkbox4, 128, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_opa(ui_Checkbox5, 128, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_opa(ui_Roller1, 128, 0);
-    lv_obj_set_style_bg_opa(ui_Roller2, 128, 0);
-    lv_obj_set_style_bg_opa(ui_Roller3, 128, 0);
+    // lv_obj_set_style_bg_opa(ui_Checkbox1, 192, LV_PART_INDICATOR);
+    // lv_obj_set_style_bg_opa(ui_Checkbox2, 192, LV_PART_INDICATOR);
+    // lv_obj_set_style_bg_opa(ui_Checkbox3, 192, LV_PART_INDICATOR);
+    // lv_obj_set_style_bg_opa(ui_Checkbox4, 192, LV_PART_INDICATOR);
+    // lv_obj_set_style_bg_opa(ui_Checkbox5, 192, LV_PART_INDICATOR);
+    // lv_obj_set_style_bg_opa(ui_Roller1, 192, 0);
+    // lv_obj_set_style_bg_opa(ui_Roller2, 192, 0);
+    // lv_obj_set_style_bg_opa(ui_Roller3, 192, 0);
 
     // 设置回调
     lv_obj_add_event_cb(ui_Checkbox1, [](lv_event_t *e)
                         { globalSettings.graphSize = lv_obj_has_state(e->target, LV_STATE_CHECKED); widget_graph_updateSettings(); }, LV_EVENT_CLICKED, NULL); // 大尺寸
     lv_obj_add_event_cb(ui_Checkbox2, [](lv_event_t *e)
-                        { globalSettings.enableMaxValueDisplay = lv_obj_has_state(e->target, LV_STATE_CHECKED); }, LV_EVENT_CLICKED, NULL); // 最大值
+                        { globalSettings.enableMaxValueDisplay = lv_obj_has_state(e->target, LV_STATE_CHECKED); ui_crosshairs_updateVisibility(); }, LV_EVENT_CLICKED, NULL); // 最大值
     lv_obj_add_event_cb(ui_Checkbox3, [](lv_event_t *e)
                         { globalSettings.enableCenterValueDisplay = lv_obj_has_state(e->target, LV_STATE_CHECKED); }, LV_EVENT_CLICKED, NULL); // 中心值
     lv_obj_add_event_cb(ui_Checkbox4, [](lv_event_t *e)
                         { globalSettings.enableGraph = lv_obj_has_state(e->target, LV_STATE_CHECKED); widget_graph_updateSettings(); }, LV_EVENT_CLICKED, NULL); // 显示图表
     lv_obj_add_event_cb(ui_Checkbox5, [](lv_event_t *e)
-                        { globalSettings.enableMinValueDisplay = lv_obj_has_state(e->target, LV_STATE_CHECKED); }, LV_EVENT_CLICKED, NULL); // 最小值
+                        { globalSettings.enableMinValueDisplay = lv_obj_has_state(e->target, LV_STATE_CHECKED); ui_crosshairs_updateVisibility(); }, LV_EVENT_CLICKED, NULL); // 最小值
     lv_obj_add_event_cb(ui_Roller1, [](lv_event_t *e)
                         { globalSettings.graphRefreshInterval = lv_roller_get_selected(e->target); widget_graph_updateSettings(); }, LV_EVENT_KEY, NULL); // 数据源
     lv_obj_add_event_cb(ui_Roller2, [](lv_event_t *e)
