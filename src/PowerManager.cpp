@@ -92,5 +92,5 @@ void PowerManager_powerOff()
     serialWrite(serial_fd, SERIAL_CMD_POWEROFF);
     system("poweroff");
     // stop here
-    kill(getpid(), SIGTERM);
+    exit(0);
 }
