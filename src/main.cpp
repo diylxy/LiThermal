@@ -1,7 +1,6 @@
 #include "my_main.h"
 pthread_mutex_t lv_mutex;
 
-// lv_obj_t *test_anim_obj;
 /// @brief 热成像刷新线程
 pthread_t thread_app;
 void *thread_app_func(void *)
@@ -56,12 +55,6 @@ int main()
     lv_obj_clear_flag(lv_scr_act(), LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(lv_layer_top(), LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(lv_layer_sys(), LV_OBJ_FLAG_SCROLLABLE);
-    // test_anim_obj = lv_obj_create(lv_layer_sys());
-    // lv_obj_set_style_radius(test_anim_obj, LV_RADIUS_CIRCLE, 0);
-    // lv_obj_set_style_bg_color(test_anim_obj, lv_color_hex(0x00FF00), 0);
-    // lv_obj_set_style_border_width(test_anim_obj, 0, 0);
-    // lv_obj_set_pos(test_anim_obj, 0, 0);
-    // lv_obj_set_size(test_anim_obj, 3, 3);
     printf("Loop begin\n");
     waitboot_scr_load(lv_scr_act());
     widget_graph_create();
