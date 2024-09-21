@@ -68,6 +68,7 @@ static photo_type_t getPhotoType(int id)
 
 /// @brief 渲染图像/视频缩略图到canvas
 /// @param obj_id 对应canvas在image_obj中的位置
+extern "C" const lv_img_dsc_t clapperboard;
 static void image_obj_render(int obj_id)
 {
     char filename_buffer[128];
@@ -78,9 +79,14 @@ static void image_obj_render(int obj_id)
     switch (getPhotoType(image_src_id[obj_id]))
     {
     case PHOTO_TYPE_RAW_CAPTURE:
+        canvas_draw_dsc.zoom = 128 * 3;
+        lv_canvas_draw_img(obj_canvas, 0, 0, filename_buffer, &canvas_draw_dsc);
+        break;
     case PHOTO_TYPE_VIDEO:
         canvas_draw_dsc.zoom = 128 * 3;
         lv_canvas_draw_img(obj_canvas, 0, 0, filename_buffer, &canvas_draw_dsc);
+        canvas_draw_dsc.zoom = 256;
+        lv_canvas_draw_img(obj_canvas, 10, 10, &clapperboard, &canvas_draw_dsc);
         break;
     default:
         printf("SKIP\n");
@@ -303,8 +309,6 @@ lv_obj_t *ffmpeg_fullscreen = NULL;
 static void full_screen_show(int id)
 {
     photo_type_t type = getPhotoType(id);
-    printf("ID: %d\n", id);
-    printf("Type: %d\n", type);
     char file_name_buffer[128];
 
     if (type == PHOTO_TYPE_FILE_NOT_FOUND)
