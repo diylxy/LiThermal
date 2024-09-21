@@ -76,6 +76,7 @@ static void image_obj_render(int obj_id)
         return;
     sprintf(filename_buffer, "/mnt/UDISK/DCIM/CAP%05d.jpeg", image_src_id[obj_id]);
     lv_obj_t *obj_canvas = lv_obj_get_child(image_obj[obj_id], 0);
+    canvas_draw_dsc.antialias = 0;
     switch (getPhotoType(image_src_id[obj_id]))
     {
     case PHOTO_TYPE_RAW_CAPTURE:
@@ -314,6 +315,8 @@ static void full_screen_show(int id)
 {
     photo_type_t type = getPhotoType(id);
     char file_name_buffer[128];
+    
+    canvas_draw_dsc.antialias = 1;
 
     if (type == PHOTO_TYPE_FILE_NOT_FOUND)
     {

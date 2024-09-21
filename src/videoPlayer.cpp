@@ -28,7 +28,6 @@ static void createImage(bool isResume)
     lv_img_set_src(videoPlayer.img_obj, &img_ir_frame);
     lv_obj_align(videoPlayer.img_obj, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_opa(videoPlayer.img_obj, 0, 0);
-    lv_obj_move_background(videoPlayer.img_obj);
 }
 static void destroyImage()
 {

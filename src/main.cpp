@@ -29,7 +29,10 @@ void *thread_app_func(void *)
             last_show_center = globalSettings.enableCenterValueDisplay;
             cameraUtils.setCenterMeasure(last_show_center);
         }
-        cameraUtils.getTemperature();
+        if (current_mode == MODE_MAINPAGE || current_mode == MODE_CAMERA_SETTINGS)
+        {
+            cameraUtils.getTemperature();
+        }
         LOCKLV();
         ui_crosshairs_updatePos();
         widget_graph_check_visibility();

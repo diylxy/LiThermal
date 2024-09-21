@@ -26,6 +26,8 @@ void ui_crosshairs_updateVisibility()
     {
         lv_obj_add_flag(crosshairs_min_obj, LV_OBJ_FLAG_HIDDEN);
     }
+    lv_obj_move_foreground(crosshairs_max_obj);
+    lv_obj_move_foreground(crosshairs_min_obj);
 }
 
 static void crosshair_anim_move(lv_obj_t *obj, lv_coord_t x, lv_coord_t y)
