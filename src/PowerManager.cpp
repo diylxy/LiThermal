@@ -90,6 +90,7 @@ void PowerManager_powerOff()
     if (serial_fd <= 0)
         return;
     serialWrite(serial_fd, SERIAL_CMD_POWEROFF);
+    system("echo 1 > /tmp/poweroff");
     system("poweroff");
     // stop here
     exit(0);
