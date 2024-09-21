@@ -5,19 +5,37 @@ static void flash_bang_effect()
     lv_obj_t *mask_camera = lv_obj_create(lv_scr_act());
     lv_obj_set_size(mask_camera, 320, 240);
     lv_obj_set_style_border_width(mask_camera, 0, 0);
-    lv_obj_set_style_bg_color(mask_camera, lv_color_white(), 0);
+    if (globalSettings.useBlackFlashBang == false)
+        lv_obj_set_style_bg_color(mask_camera, lv_color_white(), 0);
+    else
+        lv_obj_set_style_bg_color(mask_camera, lv_color_black(), 0);
     lv_obj_set_style_radius(mask_camera, 0, 0);
     lv_obj_set_style_opa(mask_camera, 128, 0);
     lv_obj_fade_out(mask_camera, 300, 0);
     lv_obj_del_delayed(mask_camera, 300);
     UNLOCKLV();
 }
+#define TJE_IMPLEMENTATION
+#include "utils/tiny_jpeg.h"
 void camera_take_photo_from_stream()
 {
     if (cameraUtils.connected == false)
         return;
+    if (globalSettings.preserveUI == false)
+    {
+        cameraUtils.readJpegWithExtra(allocateNewFilename());
+    }
+    else
+    {
+        char data[128];
+        sprintf(data, "%s.jpeg", allocateNewFilename());
+        LOCKLV();
+        lv_img_dsc_t *snapshot = lv_snapshot_take(lv_scr_act(), LV_IMG_CF_TRUE_COLOR);
+        tje_encode_to_file(data, 320, 240, 4, snapshot->data);
+        lv_snapshot_free(snapshot);
+        UNLOCKLV();
+    }
     flash_bang_effect();
-    cameraUtils.readJpegWithExtra(allocateNewFilename());
 }
 #include "lottie_rec.h"
 extern bool packet_dumping;

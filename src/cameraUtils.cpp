@@ -251,3 +251,8 @@ void CameraUtils::setCenterMeasure(bool en)
         cli.Put("/ISAPI/Thermal/channels/1/temperatureCorrect?format=json", data, "application/json");
     }
 }
+
+void CameraUtils::calibrateManually()
+{
+    cli.Put("/ISAPI/Image/channels/1/ManualShutterCorrect", "", "application/xml");
+}

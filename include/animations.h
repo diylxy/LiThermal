@@ -102,7 +102,10 @@ public:
             if (anim_type == CARD_ANIM_FALL_DOWN)
                 lv_my_anim_fall_down(obj);
             else if (anim_type == CARD_ANIM_FLY_DOWN)
+            {
                 lv_anim_fall_fly(obj);
+                lv_obj_del_delayed(obj, MY_FLY_DOWN_ANIM_DEFAULT_TIME);
+            }
             else
                 lv_obj_del(obj);
         }

@@ -52,6 +52,7 @@ public:
     void setDigitalDetailEnhancement(bool en, int level);
     float readJpegWithExtra(const char *save_filename = NULL, int result_x = 160 / 2, int result_y = 120 / 2);
     void setCenterMeasure(bool en);
+    void calibrateManually();
 };
 
 extern CameraUtils cameraUtils;

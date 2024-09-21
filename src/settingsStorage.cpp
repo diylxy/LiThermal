@@ -14,6 +14,8 @@ void settings_default()
     globalSettings.enableMaxValueDisplay = false;
     globalSettings.enableMinValueDisplay = false;
     globalSettings.enableCenterValueDisplay = true;
+    globalSettings.preserveUI = false;
+    globalSettings.useBlackFlashBang = false;
     globalSettings.__tail = SETTINGS_TAIL;
 }
 
