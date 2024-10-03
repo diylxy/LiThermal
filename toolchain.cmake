@@ -1,5 +1,5 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR arm)
-set(CROSS_CHAIN_PATH  /home/lxy/Desktop/tina-sdk/prebuilt/gcc/linux-x86/arm/toolchain-sunxi-musl/toolchain/bin/)
+set(CROSS_CHAIN_PATH  ${ROOTPATH}/toolchain-sunxi-musl/toolchain/bin/)
 set(CMAKE_C_COMPILER ${CROSS_CHAIN_PATH}arm-openwrt-linux-gcc)
 set(CMAKE_CXX_COMPILER ${CROSS_CHAIN_PATH}arm-openwrt-linux-g++)
