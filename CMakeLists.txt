@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7.4)
 
-project(thermalcamera)
+project(LiThermal)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 file(GLOB_RECURSE SRC_DIR_LIST "src/*.cpp" "src/*.c")	#遍历获取source/路径下所有的*.cpp和*.c文件列表
 
