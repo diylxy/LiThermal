@@ -8,6 +8,7 @@
 #include <errno.h>   // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
 #include <unistd.h>  // write(), read(), close()
+#include <sys/select.h>
 
 static int serial_fd = 0;
 int serialSetup()
@@ -46,6 +47,7 @@ int serialSetup()
         printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
         return -1;
     }
+    tcflush(serial_port, TCIOFLUSH); // Flush serial buffer
     return serial_port;
 }
 
@@ -63,20 +65,59 @@ static int serialWrite(int fd, uint8_t command)
 #define SERIAL_CMD_USBMODE_NORMAL 0x11
 #define SERIAL_CMD_USBMODE_WIFI_CAM 0x12
 #define SERIAL_CMD_USBMODE_DIRECT 0x13
+#define SERIAL_CMD_IS_CHARGING 0x59
 
 int16_t PowerManager_getBatteryVoltage()
 {
     char buf[2];
-    int len;
+    int len = -1;
     int16_t result = 0;
     serialWrite(serial_fd, SERIAL_CMD_READ_ADC);
-    len = read(serial_fd, buf, 2);
+    /*author: https://stackoverflow.com/a/2918709 */
+    fd_set set;
+    struct timeval timeout;
+    FD_ZERO(&set);           /* clear the set */
+    FD_SET(serial_fd, &set); /* add our file descriptor to the set */
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 30000;
+
+    int select_result = select(serial_fd + 1, &set, NULL, NULL, &timeout);
+    if (select_result == -1)
+        return -1; /* an error accured */
+    else if (select_result == 0)
+        return -1; /* a timeout occured */
+    else
+        len = read(serial_fd, buf, 2);
+
     if (len < 0)
         return -1;
     result = buf[0];
     result <<= 8;
     result |= buf[1];
     return result;
+}
+
+bool PowerManager_isCharging()
+{
+    char buf = 0;
+    serialWrite(serial_fd, SERIAL_CMD_IS_CHARGING);
+    /*author: https://stackoverflow.com/a/2918709 */
+    fd_set set;
+    struct timeval timeout;
+    FD_ZERO(&set);           /* clear the set */
+    FD_SET(serial_fd, &set); /* add our file descriptor to the set */
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 30000;
+
+    int select_result = select(serial_fd + 1, &set, NULL, NULL, &timeout);
+    if (select_result == -1)
+        return false; /* an error accured */
+    else if (select_result == 0)
+        return false; /* a timeout occured */
+    else
+        read(serial_fd, &buf, 1);
+
+    return (buf == 1);
 }
 
 void PowerManager_init()

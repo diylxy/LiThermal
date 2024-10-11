@@ -49,6 +49,7 @@ void waitboot_scr_load(lv_obj_t *parent);
 
 // 电源管理相关
 int16_t PowerManager_getBatteryVoltage();
+bool PowerManager_isCharging();
 void PowerManager_init();
 void PowerManager_powerOff();
 
