@@ -73,13 +73,14 @@ int16_t PowerManager_getBatteryVoltage()
     int len = -1;
     int16_t result = 0;
     serialWrite(serial_fd, SERIAL_CMD_READ_ADC);
+    tcflush(serial_fd, TCIOFLUSH); // Flush serial buffer
     /*author: https://stackoverflow.com/a/2918709 */
     fd_set set;
     struct timeval timeout;
     FD_ZERO(&set);           /* clear the set */
     FD_SET(serial_fd, &set); /* add our file descriptor to the set */
     timeout.tv_sec = 0;
-    timeout.tv_usec = 30000;
+    timeout.tv_usec = 100000;
 
     int select_result = select(serial_fd + 1, &set, NULL, NULL, &timeout);
     if (select_result == -1)
@@ -101,13 +102,14 @@ bool PowerManager_isCharging()
 {
     char buf = 0;
     serialWrite(serial_fd, SERIAL_CMD_IS_CHARGING);
+    // tcflush(serial_fd, TCIOFLUSH); // Flush serial buffer
     /*author: https://stackoverflow.com/a/2918709 */
     fd_set set;
     struct timeval timeout;
     FD_ZERO(&set);           /* clear the set */
     FD_SET(serial_fd, &set); /* add our file descriptor to the set */
     timeout.tv_sec = 0;
-    timeout.tv_usec = 30000;
+    timeout.tv_usec = 100000;
 
     int select_result = select(serial_fd + 1, &set, NULL, NULL, &timeout);
     if (select_result == -1)
