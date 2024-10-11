@@ -62,6 +62,7 @@ void *thread_refresh_image(void *)
         {
         case CMD_CONNECT:
         {
+        retry:
             printf("Connceting to RTSP...\n");
             if (codec_openStream(VIDEO_STREAM_URL))
             {
@@ -75,9 +76,10 @@ void *thread_refresh_image(void *)
             }
             else
             {
-                printf("Stream open fail\n");
+                printf("Stream open fail, retrying...\n");
                 codec_closeEverything();
                 sleep(1);
+                goto retry;
             }
         }
         break;
