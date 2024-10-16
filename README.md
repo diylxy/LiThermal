@@ -69,7 +69,11 @@ IP地址（也可以在web里改）：
 通过USB连接摄像头到PCB（VCC <-> VCC, D- <-> D-, D+ <-> D+, GND <-> CGND）【图待补充】。再次上电，如果一切正常，屏幕会显示热成像画面。  
 
 ## 外壳组装
-【待补充】  
+4117模组拆开后按照下图组装，注意安装方向  
+第一步安装热成像镜头部分，从外往里（此时需要断开排线）：  
+![DSC_8540](https://github.com/user-attachments/assets/0edbf785-3393-4aa7-a6d8-651abf95b338)  
+第二步连接好主板排线，向右上方翻折，注意排线方向：  
+![DSC_8541](https://github.com/user-attachments/assets/d806ed85-da94-4f88-8ed7-2d209df5b4eb)  
 
 # 编译教程
 [LiThermal_Compiler](https://github.com/diylxy/LiThermal_Compiler)  
