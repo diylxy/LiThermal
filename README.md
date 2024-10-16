@@ -1,11 +1,13 @@
 # LiThermal 热成像相机
 ![封面](https://github.com/user-attachments/assets/4fc6f390-e887-44be-a5c8-28915dc0e16e)
-## 相关链接
-**[Bilibili 演示视频](https://oshwhub.com/lxu0423/lithermal-thermal-imaging-camera)**  
-**[硬件设计](https://oshwhub.com/lxu0423/lithermal-thermal-imaging-camera)**   
-**[教程中用到的相关工具](https://github.com/diylxy/LiThermal_Tools)**  
-**[自行编译固件](https://github.com/diylxy/LiThermal_Compiler)**  
 
+# 相关链接
+**[Bilibili 演示视频](https://oshwhub.com/lxu0423/lithermal-thermal-imaging-camera)**  
+**[立创开源平台（开源硬件工程）](https://oshwhub.com/lxu0423/lithermal-thermal-imaging-camera)**   
+**[教程中用到的相关工具](https://github.com/diylxy/LiThermal_Tools)**  
+**[编译工具链](https://github.com/diylxy/LiThermal_Compiler)**  
+
+# 复刻教程
 ## 复刻前你必须要了解的
 复刻本作品需要你能够焊接0402元件和0.3毫米间距的QFP引脚，需要有一定Linux系统使用经验和计算机网络基础。**会使用搜索引擎解决常见问题**。  
 ### **复刻难度很大，如果你不符合上述情况，请勿轻易尝试。**  
@@ -69,11 +71,11 @@ IP地址（也可以在web里改）：
 ## 外壳组装
 【待补充】  
 
-## 编译教程
+# 编译教程
 [LiThermal_Compiler](https://github.com/diylxy/LiThermal_Compiler)  
 可以Fork这个仓库和本仓库，修改`LiThermal_Compiler/.gitmodules`中子模块路径为自己的仓库链接，再用vscode.dev修改代码，并利用Github Actions直接编译（理论可行，还未测试，建议用自己的系统编译）。  
 
-## 常见问题
+# 常见问题
 以下已知问题来自网友，供大家参考。  
 ### 照片黑屏、图像显示样式没有反应、获取不到温度最大值最小值……
 按照本文“摄像头设置-图-Web认证”设置，记得点保存。  
@@ -100,6 +102,10 @@ adb shell reboot
 如果已经焊接，可以[配置端口转发](https://github.com/diylxy/LiThermal_Tools/blob/master/%E9%85%8D%E7%BD%AE%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91.md)后进入海康后台修改。  
 ### IP地址忘改了，又不想重新拆焊
 参考[配置端口转发](https://github.com/diylxy/LiThermal_Tools/blob/master/%E9%85%8D%E7%BD%AE%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91.md)，使用ifconfig配置usb0网卡静态IP到海康4117网段，然后利用ping和curl找到4117的IP，并重定向它的80端口到电脑，在浏览器web后台修改IP。这需要一些Linux基础。  
+### T113-S3识别不到4117，或者4117识别不到88179网卡
+建议改用短线或屏蔽线。或尝试用干扰较小的电源，如充电宝、可调电源等为4117供电。  
+*贡献者：`风雪里悠悠长白`*   
+
 ### 其它问题，比如白屏、黑屏、花屏、屏幕出现绿色条纹、开机没反应
 检查焊接吧。  
 
