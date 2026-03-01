@@ -8,6 +8,7 @@ static int factory_reset_cnt;
 static lv_obj_t *ui_Switch2;
 static lv_obj_t *ui_Checkbox6;
 static lv_obj_t *ui_Checkbox7;
+static lv_obj_t *ui_CheckboxBatteryPct;
 static void card_menu_system_construct(lv_obj_t *parent)
 {
     factory_reset_cnt = 3;
@@ -52,24 +53,39 @@ static void card_menu_system_construct(lv_obj_t *parent)
     lv_obj_add_flag(ui_Checkbox7, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_set_style_text_font(ui_Checkbox7, &ui_font_chinese16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    lv_obj_t *ui_PanelBatteryPct = lv_obj_create(parent);
+    lv_obj_set_width(ui_PanelBatteryPct, 140);
+    lv_obj_set_height(ui_PanelBatteryPct, 42);
+    lv_obj_set_x(ui_PanelBatteryPct, 0);
+    lv_obj_set_y(ui_PanelBatteryPct, 50);
+    lv_obj_clear_flag(ui_PanelBatteryPct, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+
+    ui_CheckboxBatteryPct = lv_checkbox_create(ui_PanelBatteryPct);
+    lv_checkbox_set_text(ui_CheckboxBatteryPct, "电量百分比");
+    lv_obj_set_width(ui_CheckboxBatteryPct, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_CheckboxBatteryPct, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_CheckboxBatteryPct, -5);
+    lv_obj_set_y(ui_CheckboxBatteryPct, 0);
+    lv_obj_set_align(ui_CheckboxBatteryPct, LV_ALIGN_LEFT_MID);
+    lv_obj_add_flag(ui_CheckboxBatteryPct, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_set_style_text_font(ui_CheckboxBatteryPct, &ui_font_chinese16, LV_PART_MAIN | LV_STATE_DEFAULT);
+
     lv_obj_t *ui_Panel10 = lv_obj_create(parent);
-    lv_obj_set_width(ui_Panel10, 270);
+    lv_obj_set_width(ui_Panel10, 119);
     lv_obj_set_height(ui_Panel10, 42);
-    lv_obj_set_x(ui_Panel10, 0);
+    lv_obj_set_x(ui_Panel10, 150);
     lv_obj_set_y(ui_Panel10, 50);
     lv_obj_clear_flag(ui_Panel10, LV_OBJ_FLAG_SCROLLABLE); /// Flags
 
-    ui_Switch2 = lv_switch_create(ui_Panel10);
-    lv_obj_set_width(ui_Switch2, 50);
-    lv_obj_set_height(ui_Switch2, 25);
-    lv_obj_set_align(ui_Switch2, LV_ALIGN_RIGHT_MID);
-
-    lv_obj_t *ui_Label14 = lv_label_create(ui_Panel10);
-    lv_obj_set_width(ui_Label14, LV_SIZE_CONTENT);  /// 1
-    lv_obj_set_height(ui_Label14, LV_SIZE_CONTENT); /// 1
-    lv_obj_set_align(ui_Label14, LV_ALIGN_LEFT_MID);
-    lv_label_set_text(ui_Label14, "拍照动画反色");
-    lv_obj_set_style_text_font(ui_Label14, &ui_font_chinese16, LV_PART_MAIN | LV_STATE_DEFAULT);
+    ui_Switch2 = lv_checkbox_create(ui_Panel10);
+    lv_checkbox_set_text(ui_Switch2, "图片反色");
+    lv_obj_set_width(ui_Switch2, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_Switch2, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_x(ui_Switch2, -5);
+    lv_obj_set_y(ui_Switch2, 0);
+    lv_obj_set_align(ui_Switch2, LV_ALIGN_LEFT_MID);
+    lv_obj_add_flag(ui_Switch2, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_set_style_text_font(ui_Switch2, &ui_font_chinese16, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t *ui_Button1 = lv_btn_create(parent);
     lv_obj_set_width(ui_Button1, 140);
@@ -123,6 +139,8 @@ static void card_menu_system_construct(lv_obj_t *parent)
                         { globalSettings.preserveUI = lv_obj_has_state(e->target, LV_STATE_CHECKED); }, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(ui_Checkbox7, [](lv_event_t *e)
                         { globalSettings.use4117Cursors = lv_obj_has_state(e->target, LV_STATE_CHECKED); }, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(ui_CheckboxBatteryPct, [](lv_event_t *e)
+                        { globalSettings.showBatteryPercent = lv_obj_has_state(e->target, LV_STATE_CHECKED); }, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(ui_Switch2, [](lv_event_t *e)
                         { globalSettings.useBlackFlashBang = lv_obj_has_state(e->target, LV_STATE_CHECKED); }, LV_EVENT_CLICKED, NULL);
     lv_obj_add_event_cb(ui_Button1, [](lv_event_t *e)
@@ -137,6 +155,7 @@ static void card_menu_system_construct(lv_obj_t *parent)
             settings_save();
             lv_obj_clear_state(ui_Checkbox6, LV_STATE_CHECKED);
             lv_obj_clear_state(ui_Checkbox7, LV_STATE_CHECKED);
+            lv_obj_clear_state(ui_CheckboxBatteryPct, LV_STATE_CHECKED);
             lv_obj_clear_state(ui_Switch2, LV_STATE_CHECKED);
             widget_graph_updateSettings();
             ui_crosshairs_updateVisibility();
@@ -151,6 +170,8 @@ static void card_menu_system_construct(lv_obj_t *parent)
         lv_obj_add_state(ui_Checkbox6, LV_STATE_CHECKED);
     if (globalSettings.use4117Cursors)
         lv_obj_add_state(ui_Checkbox7, LV_STATE_CHECKED);
+    if (globalSettings.showBatteryPercent)
+        lv_obj_add_state(ui_CheckboxBatteryPct, LV_STATE_CHECKED);
     if (globalSettings.useBlackFlashBang)
         lv_obj_add_state(ui_Switch2, LV_STATE_CHECKED);
 }

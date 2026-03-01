@@ -69,6 +69,34 @@ static photo_type_t getPhotoType(int id)
 /// @brief 渲染图像/视频缩略图到canvas
 /// @param obj_id 对应canvas在image_obj中的位置
 extern "C" const lv_img_dsc_t clapperboard;
+
+static void canvas_draw_img_fit_center(lv_obj_t *canvas, const char *src, int canvas_w, int canvas_h, int32_t fallback_zoom)
+{
+    lv_canvas_fill_bg(canvas, lv_color_black(), LV_OPA_COVER);
+
+    lv_img_header_t header;
+    int32_t zoom = fallback_zoom;
+    int32_t x = 0;
+    int32_t y = 0;
+
+    if (lv_img_decoder_get_info(src, &header) == LV_RES_OK && header.w > 0 && header.h > 0)
+    {
+        int32_t zw = (canvas_w * 256) / header.w;
+        int32_t zh = (canvas_h * 256) / header.h;
+        zoom = (zw < zh) ? zw : zh;
+        if (zoom <= 0)
+            zoom = 1;
+
+        int32_t draw_w = (header.w * zoom) / 256;
+        int32_t draw_h = (header.h * zoom) / 256;
+        x = (canvas_w - draw_w) / 2;
+        y = (canvas_h - draw_h) / 2;
+    }
+
+    canvas_draw_dsc.zoom = zoom;
+    lv_canvas_draw_img(canvas, x, y, src, &canvas_draw_dsc);
+}
+
 static void image_obj_render(int obj_id)
 {
     char filename_buffer[128];
@@ -81,15 +109,14 @@ static void image_obj_render(int obj_id)
     {
     case PHOTO_TYPE_RAW_CAPTURE:
         canvas_draw_dsc.zoom = 128 * 3;
+        lv_canvas_fill_bg(obj_canvas, lv_color_black(), LV_OPA_COVER);
         lv_canvas_draw_img(obj_canvas, 0, 0, filename_buffer, &canvas_draw_dsc);
         break;
     case PHOTO_TYPE_SCREENSHOT:
-        canvas_draw_dsc.zoom = 192;
-        lv_canvas_draw_img(obj_canvas, 0, 0, filename_buffer, &canvas_draw_dsc);
+        canvas_draw_img_fit_center(obj_canvas, filename_buffer, 240, 180, 192);
         break;
     case PHOTO_TYPE_VIDEO:
-        canvas_draw_dsc.zoom = 128 * 3;
-        lv_canvas_draw_img(obj_canvas, 0, 0, filename_buffer, &canvas_draw_dsc);
+        canvas_draw_img_fit_center(obj_canvas, filename_buffer, 240, 180, 192);
         canvas_draw_dsc.zoom = 256;
         lv_canvas_draw_img(obj_canvas, 10, 10, &clapperboard, &canvas_draw_dsc);
         break;

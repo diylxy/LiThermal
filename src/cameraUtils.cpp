@@ -257,6 +257,61 @@ void CameraUtils::calibrateManually()
     cli.Put("/ISAPI/Image/channels/1/ManualShutterCorrect", "", "application/xml");
 }
 
+static bool xml_replace_tag_value(std::string *s, const char *tag, const char *value)
+{
+    if (!s || !tag || !value)
+        return false;
+
+    std::string open = std::string("<") + tag + ">";
+    std::string close = std::string("</") + tag + ">";
+
+    size_t p0 = s->find(open);
+    if (p0 == std::string::npos)
+        return false;
+    p0 += open.size();
+
+    size_t p1 = s->find(close, p0);
+    if (p1 == std::string::npos)
+        return false;
+
+    s->replace(p0, p1 - p0, value);
+    return true;
+}
+
+static bool shutter_correct_set_mode_on_url(const char *url, const char *mode)
+{
+    if (!url || !mode)
+        return false;
+
+    auto res = cli.Get(url);
+    if (!(res && res->status == 200))
+        return false;
+
+    std::string body = res->body;
+
+    bool ok = xml_replace_tag_value(&body, "shutterMode", mode) ||
+              xml_replace_tag_value(&body, "mode", mode);
+
+    if (!ok)
+    {
+        body = std::string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>") +
+               "<ShutterCorrect><mode>" + mode + "</mode></ShutterCorrect>";
+    }
+
+    auto put_res = cli.Put(url, body, "application/xml");
+    return (put_res && (put_res->status == 200 || put_res->status == 204));
+}
+
+void CameraUtils::setAutoShutterCorrect(bool enable)
+{
+    const char *mode = enable ? "auto" : "manual";
+
+    if (shutter_correct_set_mode_on_url("/ISAPI/Thermal/channels/1/shutterCorrect", mode))
+        return;
+    if (shutter_correct_set_mode_on_url("/ISAPI/Image/channels/1/shutterCorrect", mode))
+        return;
+}
+
 void CameraUtils::set4117Cursor(bool min, bool max)
 {
     auto res = cli.Get("/ISAPI/Thermal/channels/1/thermometry/basicParam");

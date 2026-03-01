@@ -2,6 +2,8 @@
 #include <sys/time.h>
 #include <semaphore.h>
 #include "videoCodec.h"
+#include "recorder.h"
+
 VideoPlayer videoPlayer;
 uint8_t IR_frame_buffer[320 * 240 * 4];
 pthread_t thread_image_ref;
@@ -139,6 +141,12 @@ void *thread_refresh_image(void *)
             }
             // printf("[TRACE] Got frame\n");
             err_count = 0;
+
+            if (recorder_is_recording())
+            {
+                recorder_submit_bgra(frame->data[0], frame->linesize[0], frame->width, frame->height);
+            }
+
             av_image_copy_to_buffer(IR_frame_buffer, sizeof(IR_frame_buffer),
                                     (const uint8_t *const *)frame->data, (const int *)frame->linesize,
                                     AV_PIX_FMT_RGBA, frame->width, frame->height, 1);
